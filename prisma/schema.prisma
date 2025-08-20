@@ -1,0 +1,109 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+//////////////////////
+// Users and Accounts
+//////////////////////
+
+model Account {
+  id        String   @id @default(cuid())
+  name      String
+  apiKey    String   @unique @default(cuid()) // widget config keyed here
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users         AccountUser[]
+  themes        Theme[]
+  announcements Announcement[]
+  flows         Flow[]
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  accounts AccountUser[]
+}
+
+// Join table for multi-user accounts
+model AccountUser {
+  id        String   @id @default(cuid())
+  accountId String
+  userId    String
+  role      String // e.g. "owner", "admin", "editor"
+  createdAt DateTime @default(now())
+
+  account Account @relation(fields: [accountId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
+}
+
+//////////////////////
+// Themes
+//////////////////////
+
+model Theme {
+  id        String   @id @default(cuid())
+  accountId String
+  account   Account  @relation(fields: [accountId], references: [id])
+  name      String
+  config    Json // { background, color, font, etc. }
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  announcements Announcement[]
+  flows         Flow[]
+}
+
+//////////////////////
+// Announcements
+//////////////////////
+
+model Announcement {
+  id        String  @id @default(cuid())
+  accountId String
+  account   Account @relation(fields: [accountId], references: [id])
+  themeId   String?
+  theme     Theme?  @relation(fields: [themeId], references: [id])
+
+  title       String
+  message     String
+  draft       Boolean   @default(true) // Save = draft, Publish = draft=false
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+//////////////////////
+// Flows
+//////////////////////
+
+model Flow {
+  id        String  @id @default(cuid())
+  accountId String
+  account   Account @relation(fields: [accountId], references: [id])
+  themeId   String?
+  theme     Theme?  @relation(fields: [themeId], references: [id])
+
+  name        String
+  steps       Json // [{ question, answers }, ...]
+  draft       Boolean   @default(true)
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}

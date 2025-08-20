@@ -26,10 +26,8 @@ import { useState } from 'react';
 import { useAnnouncements } from '@/hooks/useAnnouncements';
 
 export default function AnnouncementsPage() {
-  // Example account ID - in a real app this would come from auth context
   const accountId = 'account_1';
 
-  // React Query hook for announcements
   const {
     createAnnouncement,
     createAnnouncementAsync,
@@ -211,7 +209,6 @@ export default function AnnouncementsPage() {
 
           <Divider sx={{ my: 2 }} />
 
-          {/* Action Buttons */}
           <Stack direction="row" spacing={2} justifyContent="flex-end">
             <Button
               variant="outlined"
@@ -233,7 +230,6 @@ export default function AnnouncementsPage() {
         </Stack>
       </Box>
 
-      {/* Success Notification */}
       <Snackbar
         open={showSuccess}
         autoHideDuration={6000}
@@ -245,11 +241,10 @@ export default function AnnouncementsPage() {
         </Alert>
       </Snackbar>
 
-      {/* Error Notification */}
       <Snackbar
         open={!!createError}
         autoHideDuration={6000}
-        onClose={() => { }} // Error will be cleared when mutation resets
+        onClose={() => { }}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
       >
         <Alert severity="error" sx={{ width: '100%' }}>
