@@ -3,259 +3,204 @@
 import {
   Box,
   Button,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
-  Stack,
-  TextField,
   Typography,
-  Link,
-  Divider,
-  Alert,
-  Snackbar,
+  Paper,
 } from '@mui/material';
 import {
-  Visibility as PreviewIcon,
-  Send as PublishIcon,
   Add as AddIcon,
 } from '@mui/icons-material';
+import { DataGrid, GridColDef, GridRowParams } from '@mui/x-data-grid';
 import { Header } from '../../components/Header';
-import { TiptapEditor } from '../../components/TiptapEditor';
-import { useState } from 'react';
 import { useAnnouncements } from '@/hooks/useAnnouncements';
+import { useRouter } from 'next/navigation';
+import dayjs from 'dayjs';
 
 export default function AnnouncementsPage() {
-  // Example account ID - in a real app this would come from auth context
+  const router = useRouter();
   const accountId = 'account_1';
 
-  // React Query hook for announcements
   const {
-    createAnnouncement,
-    createAnnouncementAsync,
-    isCreating,
-    createError,
+    announcements,
+    isLoading,
+    error,
   } = useAnnouncements(accountId);
 
-  const [type, setType] = useState<'modal' | 'banner' | 'tooltip'>('modal');
-  const [pagePattern, setPagePattern] = useState('/dashboard/*');
-  const [content, setContent] = useState({
-    title: '',
-    body: '',
-  });
-  const [buttons, setButtons] = useState<Array<{ label: string; type: 'primary' | 'secondary' }>>([
-    { label: 'Got it', type: 'primary' }
-  ]);
-  const [newButtonLabel, setNewButtonLabel] = useState('');
-  const [newButtonType, setNewButtonType] = useState<'primary' | 'secondary'>('secondary');
-  const [showSuccess, setShowSuccess] = useState(false);
-
-  // Handle publish announcement
-  const handlePublish = async () => {
-    if (!content.title.trim() || !content.body.trim()) {
-      return;
-    }
-
-    try {
-      await createAnnouncementAsync({
-        title: content.title,
-        content: content.body,
-        accountId,
-        // You can add themeId here if you have theme selection
-      });
-
-      setShowSuccess(true);
-      // Reset form
-      setContent({ title: '', body: '' });
-    } catch (error) {
-      console.error('Failed to create announcement:', error);
-    }
+  const handleRowClick = (params: GridRowParams) => {
+    console.log('Row clicked:', params.row);
+    console.log('Navigating to:', `/announcements/${params.row.id}`);
+    router.push(`/announcements/${params.row.id}`);
   };
 
+  const handleCreateNew = () => {
+    router.push('/announcements/new');
+  };
+
+  console.log('Announcements data:', announcements);
+
+  const columns: GridColDef[] = [
+    {
+      field: 'title',
+      headerName: 'Title',
+      flex: 1,
+      minWidth: 200,
+    },
+    {
+      field: 'message',
+      headerName: 'Message',
+      flex: 1,
+      minWidth: 300,
+      renderCell: (params) => {
+        const message = params.value as string;
+        return (
+          <Typography
+            sx={{
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+              maxWidth: '100%',
+            }}
+          >
+            {message}
+          </Typography>
+        );
+      },
+    },
+    {
+      field: 'createdAt',
+      headerName: 'Created',
+      width: 150,
+      renderCell: (params) => {
+        return dayjs(params.value).format('MMM DD, YYYY');
+      },
+    },
+    {
+      field: 'publishedAt',
+      headerName: 'Published',
+      width: 150,
+      renderCell: (params) => {
+        if (!params.value) return 'Not published';
+        return dayjs(params.value).format('MMM DD, YYYY');
+      },
+    },
+    {
+      field: 'draft',
+      headerName: 'Status',
+      width: 120,
+      renderCell: (params) => {
+        const isDraft = params.value as boolean;
+        return (
+          <Typography
+            sx={{
+              color: isDraft ? 'warning.main' : 'success.main',
+              fontWeight: 500,
+            }}
+          >
+            {isDraft ? 'Draft' : 'Published'}
+          </Typography>
+        );
+      },
+    },
+  ];
+
+  if (isLoading) {
+    return (
+      <Box sx={{ p: 4, pl: 6 }}>
+        <Header
+          title="Announcements"
+          subtitle="Manage your user announcements."
+        />
+        <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
+          <Typography>Loading announcements...</Typography>
+        </Box>
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box sx={{ p: 4, pl: 6 }}>
+        <Header
+          title="Announcements"
+          subtitle="Manage your user announcements."
+        />
+        <Box sx={{ mt: 4 }}>
+          <Typography color="error">
+            Error loading announcements: {error.message}
+          </Typography>
+        </Box>
+      </Box>
+    );
+  }
+
   return (
-    <Box sx={{ p: 4, pl: 6, maxWidth: 800 }}>
+    <Box sx={{ p: 4, pl: 6 }}>
       <Header
-        title="Create Announcement"
-        subtitle="Set up your user announcement flow."
+        title="Announcements"
+        subtitle="Manage your user announcements."
       />
 
       <Box sx={{ mt: 4 }}>
-        <Stack spacing={4}>
-          <FormControl fullWidth>
-            <InputLabel id="type-label">Type</InputLabel>
-            <Select
-              onChange={(e) => setType(e.target.value as 'modal' | 'banner' | 'tooltip')}
-              labelId="type-label"
-              id="type-select"
-              value={type}
-              label="Type"
-            >
-              <MenuItem value="modal">Modal</MenuItem>
-              <MenuItem value="banner">Banner</MenuItem>
-              <MenuItem value="tooltip">Tooltip</MenuItem>
-            </Select>
-          </FormControl>
-
-          {/* Page Pattern Field */}
-          <TextField
-            fullWidth
-            label="Page Pattern"
-            value={pagePattern}
-            onChange={(e) => setPagePattern(e.target.value)}
-            helperText="Specify which pages this announcement should appear on."
-          />
-
-          {/* Content Fields */}
-          <Stack spacing={2}>
-            <Typography variant="subtitle2" sx={{ fontWeight: 500 }}>
-              Content
+        {announcements.length === 0 ? (
+          <Paper
+            sx={{
+              p: 6,
+              textAlign: 'center',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 2,
+            }}
+          >
+            <Typography variant="h6" color="text.secondary">
+              No announcements found
             </Typography>
-            <TextField
-              fullWidth
-              placeholder="Announcement title"
-              size="small"
-              value={content.title}
-              onChange={(e) => setContent(prev => ({ ...prev, title: e.target.value }))}
-            />
-            <TiptapEditor
-              value={content.body}
-              onChange={(value) => setContent(prev => ({ ...prev, body: value }))}
-              placeholder="Write your announcement content here..."
-              minHeight={160}
-            />
-          </Stack>
-
-          {/* Buttons Field */}
-          <Stack spacing={2}>
-            <Typography variant="subtitle2" sx={{ fontWeight: 500 }}>
-              Buttons
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              Create your first announcement to get started.
             </Typography>
-
-            {/* Existing Buttons */}
-            {buttons.map((button, index) => (
-              <Stack key={index} direction="row" spacing={1} alignItems="center">
-                <TextField
-                  fullWidth
-                  value={button.label}
-                  size="small"
-                  onChange={(e) => {
-                    const newButtons = [...buttons];
-                    newButtons[index] = { ...newButtons[index], label: e.target.value };
-                    setButtons(newButtons);
-                  }}
-                />
-                <FormControl size="small" sx={{ minWidth: 120 }}>
-                  <Select
-                    value={button.type}
-                    onChange={(e) => {
-                      const newButtons = [...buttons];
-                      newButtons[index] = { ...newButtons[index], type: e.target.value as 'primary' | 'secondary' };
-                      setButtons(newButtons);
-                    }}
-                    size="small"
-                  >
-                    <MenuItem value="primary">Primary</MenuItem>
-                    <MenuItem value="secondary">Secondary</MenuItem>
-                  </Select>
-                </FormControl>
-                {buttons.length > 1 && (
-                  <Button
-                    size="small"
-                    onClick={() => {
-                      const newButtons = buttons.filter((_, i) => i !== index);
-                      setButtons(newButtons);
-                    }}
-                    sx={{ minWidth: 'auto', px: 1 }}
-                  >
-                    Remove
-                  </Button>
-                )}
-              </Stack>
-            ))}
-
-            {/* Add New Button */}
-            <Stack direction="row" spacing={1} alignItems="center">
-              <TextField
-                size="small"
-                placeholder="Button label"
-                value={newButtonLabel}
-                onChange={(e) => setNewButtonLabel(e.target.value)}
-                sx={{ flex: 1 }}
-              />
-              <FormControl size="small" sx={{ minWidth: 120 }}>
-                <Select
-                  value={newButtonType}
-                  onChange={(e) => setNewButtonType(e.target.value as 'primary' | 'secondary')}
-                  size="small"
-                >
-                  <MenuItem value="primary">Primary</MenuItem>
-                  <MenuItem value="secondary">Secondary</MenuItem>
-                </Select>
-              </FormControl>
-              <Button
-                variant="outlined"
-                size="small"
-                startIcon={<AddIcon />}
-                onClick={() => {
-                  if (newButtonLabel.trim()) {
-                    setButtons([...buttons, { label: newButtonLabel.trim(), type: newButtonType }]);
-                    setNewButtonLabel('');
-                  }
-                }}
-                disabled={!newButtonLabel.trim()}
-              >
-                Add
-              </Button>
-            </Stack>
-          </Stack>
-
-          <Divider sx={{ my: 2 }} />
-
-          {/* Action Buttons */}
-          <Stack direction="row" spacing={2} justifyContent="flex-end">
-            <Button
-              variant="outlined"
-              startIcon={<PreviewIcon />}
-              sx={{ minWidth: 120 }}
-            >
-              Preview
-            </Button>
             <Button
               variant="contained"
-              startIcon={<PublishIcon />}
-              sx={{ minWidth: 120 }}
-              onClick={handlePublish}
-              disabled={isCreating || !content.title.trim() || !content.body.trim()}
+              startIcon={<AddIcon />}
+              onClick={handleCreateNew}
             >
-              {isCreating ? 'Publishing...' : 'Publish'}
+              Create Announcement
             </Button>
-          </Stack>
-        </Stack>
+          </Paper>
+        ) : (
+          <>
+            <Box sx={{ mb: 2, display: 'flex', justifyContent: 'flex-end' }}>
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={handleCreateNew}
+              >
+                Create Announcement
+              </Button>
+            </Box>
+            <Paper sx={{ height: 600, width: '100%' }}>
+              <DataGrid
+                rows={announcements}
+                columns={columns}
+                getRowId={(row) => row.id}
+                pageSizeOptions={[10, 25, 50]}
+                initialState={{
+                  pagination: {
+                    paginationModel: { page: 0, pageSize: 10 },
+                  },
+                }}
+                onRowClick={handleRowClick}
+                sx={{
+                  '& .MuiDataGrid-row': {
+                    cursor: 'pointer',
+                  },
+                  '& .MuiDataGrid-row:hover': {
+                    backgroundColor: 'action.hover',
+                  },
+                }}
+              />
+            </Paper>
+          </>
+        )}
       </Box>
-
-      {/* Success Notification */}
-      <Snackbar
-        open={showSuccess}
-        autoHideDuration={6000}
-        onClose={() => setShowSuccess(false)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-      >
-        <Alert onClose={() => setShowSuccess(false)} severity="success" sx={{ width: '100%' }}>
-          Announcement published successfully!
-        </Alert>
-      </Snackbar>
-
-      {/* Error Notification */}
-      <Snackbar
-        open={!!createError}
-        autoHideDuration={6000}
-        onClose={() => { }} // Error will be cleared when mutation resets
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-      >
-        <Alert severity="error" sx={{ width: '100%' }}>
-          Failed to publish announcement. Please try again.
-        </Alert>
-      </Snackbar>
     </Box>
   );
 }

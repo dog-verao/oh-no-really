@@ -10,29 +10,35 @@ import {
   Stack,
   TextField,
   Typography,
-  Link,
   Divider,
   Alert,
   Snackbar,
+  CircularProgress,
 } from '@mui/material';
 import {
   Visibility as PreviewIcon,
-  Send as PublishIcon,
-  Add as AddIcon,
+  Save as SaveIcon,
+  ArrowBack as BackIcon,
 } from '@mui/icons-material';
-import { Header } from '../../components/Header';
-import { TiptapEditor } from '../../components/TiptapEditor';
-import { useState } from 'react';
+import { Header } from '../../../components/Header';
+import { TiptapEditor } from '../../../components/TiptapEditor';
+import { useState, useEffect } from 'react';
 import { useAnnouncements } from '@/hooks/useAnnouncements';
+import { useParams, useRouter } from 'next/navigation';
 
-export default function AnnouncementsPage() {
+export default function EditAnnouncementPage() {
+  const params = useParams();
+  const router = useRouter();
+  console.log('params', params);
+  const announcementId = params.id as string;
   const accountId = 'account_1';
 
   const {
-    createAnnouncement,
-    createAnnouncementAsync,
-    isCreating,
-    createError,
+    getAnnouncementById,
+    updateAnnouncement,
+    updateAnnouncementAsync,
+    isUpdating,
+    updateError,
   } = useAnnouncements(accountId);
 
   const [type, setType] = useState<'modal' | 'banner' | 'tooltip'>('modal');
@@ -47,34 +53,92 @@ export default function AnnouncementsPage() {
   const [newButtonLabel, setNewButtonLabel] = useState('');
   const [newButtonType, setNewButtonType] = useState<'primary' | 'secondary'>('secondary');
   const [showSuccess, setShowSuccess] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
 
-  // Handle publish announcement
-  const handlePublish = async () => {
+  // Load announcement data
+  useEffect(() => {
+    const loadAnnouncement = async () => {
+      try {
+        console.log('Loading announcement with ID:', announcementId);
+        setIsLoading(true);
+        const announcement = await getAnnouncementById(announcementId);
+        console.log('Loaded announcement:', announcement);
+
+        if (announcement) {
+          setContent({
+            title: announcement.title || '',
+            body: announcement.message || '',
+          });
+          // You can set other fields like type, pagePattern, buttons if they exist in your data
+        } else {
+          console.log('Announcement not found');
+          setNotFound(true);
+        }
+      } catch (error) {
+        console.error('Failed to load announcement:', error);
+        setNotFound(true);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (announcementId) {
+      loadAnnouncement();
+    }
+  }, [announcementId, getAnnouncementById]);
+
+  const handleSave = async () => {
     if (!content.title.trim() || !content.body.trim()) {
       return;
     }
 
     try {
-      await createAnnouncementAsync({
+      await updateAnnouncementAsync({
+        id: announcementId,
         title: content.title,
         content: content.body,
         accountId,
-        // You can add themeId here if you have theme selection
       });
 
       setShowSuccess(true);
-      // Reset form
-      setContent({ title: '', body: '' });
     } catch (error) {
-      console.error('Failed to create announcement:', error);
+      console.error('Failed to update announcement:', error);
     }
   };
+
+  if (isLoading) {
+    return (
+      <Box sx={{ p: 4, pl: 6, display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 400 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (notFound) {
+    return (
+      <Box sx={{ p: 4, pl: 6 }}>
+        <Header
+          title="Announcement Not Found"
+          subtitle="The announcement you're looking for doesn't exist."
+        />
+        <Button
+          variant="outlined"
+          startIcon={<BackIcon />}
+          onClick={() => router.push('/announcements')}
+          sx={{ mt: 2 }}
+        >
+          Back to Announcements
+        </Button>
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ p: 4, pl: 6, maxWidth: 800 }}>
       <Header
-        title="Create Announcement"
-        subtitle="Set up your user announcement flow."
+        title="Update Announcement"
+        subtitle="Update your announcement settings."
       />
 
       <Box sx={{ mt: 4 }}>
@@ -193,7 +257,6 @@ export default function AnnouncementsPage() {
               <Button
                 variant="outlined"
                 size="small"
-                startIcon={<AddIcon />}
                 onClick={() => {
                   if (newButtonLabel.trim()) {
                     setButtons([...buttons, { label: newButtonLabel.trim(), type: newButtonType }]);
@@ -212,6 +275,14 @@ export default function AnnouncementsPage() {
           <Stack direction="row" spacing={2} justifyContent="flex-end">
             <Button
               variant="outlined"
+              startIcon={<BackIcon />}
+              onClick={() => router.push('/announcements')}
+              sx={{ minWidth: 120 }}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="outlined"
               startIcon={<PreviewIcon />}
               sx={{ minWidth: 120 }}
             >
@@ -219,12 +290,12 @@ export default function AnnouncementsPage() {
             </Button>
             <Button
               variant="contained"
-              startIcon={<PublishIcon />}
+              startIcon={<SaveIcon />}
               sx={{ minWidth: 120 }}
-              onClick={handlePublish}
-              disabled={isCreating || !content.title.trim() || !content.body.trim()}
+              onClick={handleSave}
+              disabled={isUpdating || !content.title.trim() || !content.body.trim()}
             >
-              {isCreating ? 'Publishing...' : 'Publish'}
+              {isUpdating ? 'Saving...' : 'Save Changes'}
             </Button>
           </Stack>
         </Stack>
@@ -237,18 +308,18 @@ export default function AnnouncementsPage() {
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
       >
         <Alert onClose={() => setShowSuccess(false)} severity="success" sx={{ width: '100%' }}>
-          Announcement published successfully!
+          Announcement updated successfully!
         </Alert>
       </Snackbar>
 
       <Snackbar
-        open={!!createError}
+        open={!!updateError}
         autoHideDuration={6000}
         onClose={() => { }}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
       >
         <Alert severity="error" sx={{ width: '100%' }}>
-          Failed to publish announcement. Please try again.
+          Failed to update announcement. Please try again.
         </Alert>
       </Snackbar>
     </Box>

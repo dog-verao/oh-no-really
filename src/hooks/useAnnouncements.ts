@@ -19,8 +19,16 @@ export interface CreateAnnouncementData {
   accountId: string;
 }
 
-// Fetch announcements
-const fetchAnnouncements = async (accountId: string): Promise<Announcement[]> => {
+export interface UpdateAnnouncementData {
+  id: string;
+  title: string;
+  content: string;
+  themeId?: string;
+  accountId: string;
+}
+
+// TODO: account id should come from the auth context, not passed in as a parameter, we need to ensure row level security is enforced
+const getAllByAccountId = async (accountId: string): Promise<Announcement[]> => {
   const response = await fetch('/api/announcements', {
     headers: {
       'x-account-id': accountId,
@@ -34,7 +42,18 @@ const fetchAnnouncements = async (accountId: string): Promise<Announcement[]> =>
   return response.json();
 };
 
-// Create announcement
+const getAnnouncementById = async (announcementId: string): Promise<Announcement> => {
+  const response = await fetch(`/api/announcements/${announcementId}`);
+
+  if (!response.ok) {
+    console.error('Failed to fetch announcement:', response.status, response.statusText);
+    throw new Error('Failed to fetch announcement');
+  }
+
+  const data = await response.json();
+  return data;
+};
+
 const createAnnouncement = async (data: CreateAnnouncementData): Promise<Announcement> => {
   const response = await fetch('/api/announcements', {
     method: 'POST',
@@ -51,11 +70,26 @@ const createAnnouncement = async (data: CreateAnnouncementData): Promise<Announc
   return response.json();
 };
 
+const updateAnnouncement = async (data: UpdateAnnouncementData): Promise<Announcement> => {
+  const response = await fetch(`/api/announcements/${data.id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to update announcement');
+  }
+
+  return response.json();
+};
+
 // Custom hook for announcements
 export const useAnnouncements = (accountId: string) => {
   const queryClient = useQueryClient();
 
-  // Query for fetching announcements
   const {
     data: announcements,
     isLoading,
@@ -63,15 +97,22 @@ export const useAnnouncements = (accountId: string) => {
     refetch,
   } = useQuery({
     queryKey: ['announcements', accountId],
-    queryFn: () => fetchAnnouncements(accountId),
-    enabled: !!accountId, // Only run query if accountId is provided
+    queryFn: () => getAllByAccountId(accountId),
+    enabled: !!accountId,
   });
 
-  // Mutation for creating announcements
+
+
   const createMutation = useMutation({
     mutationFn: createAnnouncement,
     onSuccess: () => {
-      // Invalidate and refetch announcements after creating a new one
+      queryClient.invalidateQueries({ queryKey: ['announcements', accountId] });
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: updateAnnouncement,
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['announcements', accountId] });
     },
   });
@@ -83,10 +124,18 @@ export const useAnnouncements = (accountId: string) => {
     error,
     refetch,
 
+    getAnnouncementById,
+
     // Mutation functions
     createAnnouncement: createMutation.mutate,
     createAnnouncementAsync: createMutation.mutateAsync,
     isCreating: createMutation.isPending,
     createError: createMutation.error,
+
+    // Update functions
+    updateAnnouncement: updateMutation.mutate,
+    updateAnnouncementAsync: updateMutation.mutateAsync,
+    isUpdating: updateMutation.isPending,
+    updateError: updateMutation.error,
   };
 };

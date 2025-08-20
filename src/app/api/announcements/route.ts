@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+// TODO: account id should come from the auth context, not passed in as a parameter, we need to ensure row level security is enforced
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
