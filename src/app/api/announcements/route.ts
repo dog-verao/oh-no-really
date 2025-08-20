@@ -1,18 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-// TODO: account id should come from the auth context, not passed in as a parameter, we need to ensure row level security is enforced
-
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
+    const accountId = req.headers.get("x-account-id") as string;
+
+    if (!accountId) {
+      return NextResponse.json(
+        { error: 'Account ID is required' },
+        { status: 400 }
+      );
+    }
 
     const announcement = await prisma.announcement.create({
       data: {
         title: body.title,
         message: body.content,
         themeId: body.themeId,
-        accountId: body.accountId,
+        accountId: accountId, // Use accountId from headers for security
       },
     });
 

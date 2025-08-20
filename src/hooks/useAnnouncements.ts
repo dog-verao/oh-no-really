@@ -16,7 +16,6 @@ export interface CreateAnnouncementData {
   title: string;
   content: string;
   themeId?: string;
-  accountId: string;
 }
 
 export interface UpdateAnnouncementData {
@@ -24,10 +23,9 @@ export interface UpdateAnnouncementData {
   title: string;
   content: string;
   themeId?: string;
-  accountId: string;
 }
 
-// TODO: account id should come from the auth context, not passed in as a parameter, we need to ensure row level security is enforced
+
 const getAllByAccountId = async (accountId: string): Promise<Announcement[]> => {
   const response = await fetch('/api/announcements', {
     headers: {
@@ -42,8 +40,12 @@ const getAllByAccountId = async (accountId: string): Promise<Announcement[]> => 
   return response.json();
 };
 
-const getAnnouncementById = async (announcementId: string): Promise<Announcement> => {
-  const response = await fetch(`/api/announcements/${announcementId}`);
+const getAnnouncementById = async (announcementId: string, accountId: string): Promise<Announcement> => {
+  const response = await fetch(`/api/announcements/${announcementId}`, {
+    headers: {
+      'x-account-id': accountId,
+    },
+  });
 
   if (!response.ok) {
     console.error('Failed to fetch announcement:', response.status, response.statusText);
@@ -54,11 +56,12 @@ const getAnnouncementById = async (announcementId: string): Promise<Announcement
   return data;
 };
 
-const createAnnouncement = async (data: CreateAnnouncementData): Promise<Announcement> => {
+const createAnnouncement = async (data: CreateAnnouncementData, accountId: string): Promise<Announcement> => {
   const response = await fetch('/api/announcements', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      'x-account-id': accountId,
     },
     body: JSON.stringify(data),
   });
@@ -70,11 +73,12 @@ const createAnnouncement = async (data: CreateAnnouncementData): Promise<Announc
   return response.json();
 };
 
-const updateAnnouncement = async (data: UpdateAnnouncementData): Promise<Announcement> => {
+const updateAnnouncement = async (data: UpdateAnnouncementData, accountId: string): Promise<Announcement> => {
   const response = await fetch(`/api/announcements/${data.id}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
+      'x-account-id': accountId,
     },
     body: JSON.stringify(data),
   });
@@ -104,14 +108,14 @@ export const useAnnouncements = (accountId: string) => {
 
 
   const createMutation = useMutation({
-    mutationFn: createAnnouncement,
+    mutationFn: (data: CreateAnnouncementData) => createAnnouncement(data, accountId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['announcements', accountId] });
     },
   });
 
   const updateMutation = useMutation({
-    mutationFn: updateAnnouncement,
+    mutationFn: (data: UpdateAnnouncementData) => updateAnnouncement(data, accountId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['announcements', accountId] });
     },
@@ -124,7 +128,8 @@ export const useAnnouncements = (accountId: string) => {
     error,
     refetch,
 
-    getAnnouncementById,
+    // Query functions
+    getAnnouncementById: (announcementId: string) => getAnnouncementById(announcementId, accountId),
 
     // Mutation functions
     createAnnouncement: createMutation.mutate,

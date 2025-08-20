@@ -60,10 +60,8 @@ export default function EditAnnouncementPage() {
   useEffect(() => {
     const loadAnnouncement = async () => {
       try {
-        console.log('Loading announcement with ID:', announcementId);
         setIsLoading(true);
         const announcement = await getAnnouncementById(announcementId);
-        console.log('Loaded announcement:', announcement);
 
         if (announcement) {
           setContent({
@@ -72,7 +70,6 @@ export default function EditAnnouncementPage() {
           });
           // You can set other fields like type, pagePattern, buttons if they exist in your data
         } else {
-          console.log('Announcement not found');
           setNotFound(true);
         }
       } catch (error) {
@@ -86,7 +83,7 @@ export default function EditAnnouncementPage() {
     if (announcementId) {
       loadAnnouncement();
     }
-  }, [announcementId, getAnnouncementById]);
+  }, [announcementId]);
 
   const handleSave = async () => {
     if (!content.title.trim() || !content.body.trim()) {
@@ -98,7 +95,6 @@ export default function EditAnnouncementPage() {
         id: announcementId,
         title: content.title,
         content: content.body,
-        accountId,
       });
 
       setShowSuccess(true);
@@ -187,13 +183,11 @@ export default function EditAnnouncementPage() {
             />
           </Stack>
 
-          {/* Buttons Field */}
           <Stack spacing={2}>
             <Typography variant="subtitle2" sx={{ fontWeight: 500 }}>
               Buttons
             </Typography>
 
-            {/* Existing Buttons */}
             {buttons.map((button, index) => (
               <Stack key={index} direction="row" spacing={1} alignItems="center">
                 <TextField
@@ -235,7 +229,6 @@ export default function EditAnnouncementPage() {
               </Stack>
             ))}
 
-            {/* Add New Button */}
             <Stack direction="row" spacing={1} alignItems="center">
               <TextField
                 size="small"

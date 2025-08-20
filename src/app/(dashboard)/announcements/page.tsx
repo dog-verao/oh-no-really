@@ -26,8 +26,6 @@ export default function AnnouncementsPage() {
   } = useAnnouncements(accountId);
 
   const handleRowClick = (params: GridRowParams) => {
-    console.log('Row clicked:', params.row);
-    console.log('Navigating to:', `/announcements/${params.row.id}`);
     router.push(`/announcements/${params.row.id}`);
   };
 
@@ -35,7 +33,7 @@ export default function AnnouncementsPage() {
     router.push('/announcements/new');
   };
 
-  console.log('Announcements data:', announcements);
+
 
   const columns: GridColDef[] = [
     {

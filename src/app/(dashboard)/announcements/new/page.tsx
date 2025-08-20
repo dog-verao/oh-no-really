@@ -59,7 +59,6 @@ export default function CreateAnnouncementPage() {
       await createAnnouncementAsync({
         title: content.title,
         content: content.body,
-        accountId,
         // You can add themeId here if you have theme selection
       });
 

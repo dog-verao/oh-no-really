@@ -1,17 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-
-// TODO: account id should come from the auth context, not passed in as a parameter, we need to ensure row level security is enforced
 export async function GET(
   req: NextRequest,
-  { params }: { params: { announcement_id: string } }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const announcementId = params.announcement_id;
+    const announcementId = params.id;
+    const accountId = req.headers.get("x-account-id") as string;
 
-    const announcement = await prisma.announcement.findUnique({
+    if (!accountId) {
+      return NextResponse.json(
+        { error: 'Account ID is required' },
+        { status: 400 }
+      );
+    }
+
+    const announcement = await prisma.announcement.findFirst({
       where: {
         id: announcementId,
+        accountId: accountId, // Ensure user can only access their own announcements
       },
     });
 
@@ -34,11 +41,34 @@ export async function GET(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { announcement_id: string } }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const announcementId = params.announcement_id;
+    const announcementId = params.id;
+    const accountId = req.headers.get("x-account-id") as string;
     const body = await req.json();
+
+    if (!accountId) {
+      return NextResponse.json(
+        { error: 'Account ID is required' },
+        { status: 400 }
+      );
+    }
+
+    // First verify the announcement belongs to this account
+    const existingAnnouncement = await prisma.announcement.findFirst({
+      where: {
+        id: announcementId,
+        accountId: accountId,
+      },
+    });
+
+    if (!existingAnnouncement) {
+      return NextResponse.json(
+        { error: 'Announcement not found' },
+        { status: 404 }
+      );
+    }
 
     const announcement = await prisma.announcement.update({
       where: {
@@ -48,7 +78,7 @@ export async function PUT(
         title: body.title,
         message: body.content,
         themeId: body.themeId,
-        accountId: body.accountId,
+        // Don't allow changing accountId for security
       },
     });
 
