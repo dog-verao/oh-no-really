@@ -48,7 +48,6 @@ const getAnnouncementById = async (announcementId: string, accountId: string): P
   });
 
   if (!response.ok) {
-    console.error('Failed to fetch announcement:', response.status, response.statusText);
     throw new Error('Failed to fetch announcement');
   }
 
@@ -105,7 +104,17 @@ export const useAnnouncements = (accountId: string) => {
     enabled: !!accountId,
   });
 
+  // Function to get individual announcement with caching
+  const getAnnouncementWithCache = async (announcementId: string): Promise<Announcement> => {
+    // Check if we have it in the announcements list first
+    const existingAnnouncement = announcements?.find(ann => ann.id === announcementId);
+    if (existingAnnouncement) {
+      return existingAnnouncement;
+    }
 
+    // If not found in cache, fetch from API
+    return getAnnouncementById(announcementId, accountId);
+  };
 
   const createMutation = useMutation({
     mutationFn: (data: CreateAnnouncementData) => createAnnouncement(data, accountId),
@@ -129,7 +138,7 @@ export const useAnnouncements = (accountId: string) => {
     refetch,
 
     // Query functions
-    getAnnouncementById: (announcementId: string) => getAnnouncementById(announcementId, accountId),
+    getAnnouncementById: getAnnouncementWithCache,
 
     // Mutation functions
     createAnnouncement: createMutation.mutate,

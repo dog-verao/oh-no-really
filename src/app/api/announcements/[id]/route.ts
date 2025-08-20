@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const announcementId = params.id;
+    const { id: announcementId } = await params;
     const accountId = req.headers.get("x-account-id") as string;
 
     if (!accountId) {
@@ -41,10 +41,10 @@ export async function GET(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const announcementId = params.id;
+    const { id: announcementId } = await params;
     const accountId = req.headers.get("x-account-id") as string;
     const body = await req.json();
 
