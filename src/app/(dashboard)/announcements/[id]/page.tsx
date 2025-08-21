@@ -4,92 +4,41 @@ import {
   Box,
   Button,
   CircularProgress,
+  Typography,
+  Paper,
+  Stack,
+  Chip,
 } from '@mui/material';
 import {
   ArrowBack as BackIcon,
+  Edit as EditIcon,
 } from '@mui/icons-material';
 import { Header } from '../../../components/Header';
-import { AnnouncementForm } from '../../../components/AnnouncementForm';
-import { useState, useEffect } from 'react';
-import { useAnnouncements } from '@/hooks/useAnnouncements';
+import { AnnouncementDisplay } from '../../../components/AnnouncementDisplay';
+import { AnnouncementsProvider, useAnnouncements } from '@/contexts/AnnouncementsProvider';
 import { useParams, useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
-export default function EditAnnouncementPage() {
+function AnnouncementDetailContent() {
   const params = useParams();
   const router = useRouter();
   const announcementId = params.id as string;
   const accountId = 'account_1';
 
-  const {
-    getAnnouncementById,
-    updateAnnouncementAsync,
-    isUpdating,
-    updateError,
-  } = useAnnouncements(accountId);
+  const { loadAnnouncement, isLoading, error, formData, theme } = useAnnouncements();
 
-  const [content, setContent] = useState({
-    title: '',
-    body: '',
-    buttons: [] as Array<{
-      label: string;
-      type: 'primary' | 'secondary';
-      behavior: 'close' | 'redirect';
-      redirectUrl?: string;
-    }>,
-  });
-  const [isLoading, setIsLoading] = useState(true);
-  const [notFound, setNotFound] = useState(false);
-
-  // Load announcement data
   useEffect(() => {
-    const loadAnnouncement = async () => {
-      try {
-        setIsLoading(true);
-        const announcement = await getAnnouncementById(announcementId);
-
-        if (announcement) {
-          setContent({
-            title: announcement.title || '',
-            body: announcement.message || '',
-            buttons: (announcement.buttons as Array<{
-              label: string;
-              type: 'primary' | 'secondary';
-              behavior: 'close' | 'redirect';
-              redirectUrl?: string;
-            }>) || [],
-          });
-        } else {
-          setNotFound(true);
-        }
-      } catch (error) {
-        console.error('Failed to load announcement:', error);
-        setNotFound(true);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     if (announcementId) {
-      loadAnnouncement();
+      loadAnnouncement(announcementId);
     }
-  }, [announcementId]);
+  }, [announcementId, loadAnnouncement]);
 
-  const handleSubmit = async (data: {
-    title: string;
-    content: string;
-    buttons: Array<{
-      label: string;
-      type: 'primary' | 'secondary';
-      behavior: 'close' | 'redirect';
-      redirectUrl?: string;
-    }>;
-  }) => {
-    await updateAnnouncementAsync({
-      id: announcementId,
-      title: data.title,
-      content: data.content,
-      buttons: data.buttons,
-    });
+  const handleEdit = () => {
+    router.push(`/announcements/${announcementId}/edit`);
+  };
+
+  const handleBack = () => {
+    router.push('/announcements');
   };
 
   if (isLoading) {
@@ -100,7 +49,7 @@ export default function EditAnnouncementPage() {
     );
   }
 
-  if (notFound) {
+  if (error) {
     return (
       <Box sx={{ p: 4, pl: 6 }}>
         <Header
@@ -110,7 +59,7 @@ export default function EditAnnouncementPage() {
         <Button
           variant="outlined"
           startIcon={<BackIcon />}
-          onClick={() => router.push('/announcements')}
+          onClick={handleBack}
           sx={{ mt: 2 }}
         >
           Back to Announcements
@@ -120,18 +69,21 @@ export default function EditAnnouncementPage() {
   }
 
   return (
-    <>
-      <Header
-        title="Update Announcement"
-        subtitle="Update your announcement settings."
+    <Box sx={{ height: '100vh' }}>
+      <AnnouncementDisplay
+        onBack={handleBack}
+        onEdit={handleEdit}
       />
-      <AnnouncementForm
-        mode="edit"
-        initialData={content}
-        onSubmit={handleSubmit}
-        isSubmitting={isUpdating}
-        error={updateError}
-      />
-    </>
+    </Box>
+  );
+}
+
+export default function AnnouncementDetailPage() {
+  const accountId = 'account_1';
+
+  return (
+    <AnnouncementsProvider accountId={accountId}>
+      <AnnouncementDetailContent />
+    </AnnouncementsProvider>
   );
 }

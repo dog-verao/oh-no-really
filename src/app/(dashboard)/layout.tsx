@@ -4,6 +4,7 @@ import { Box, CircularProgress } from '@mui/material';
 import { Sidebar } from '../components/Sidebar';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { useState, useEffect } from 'react';
 
 export default function DashboardLayout({
   children,
@@ -13,6 +14,7 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const router = useRouter();
   const { user, loading } = useAuth();
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   // Determine active item based on current path
   const getActiveItem = () => {
@@ -26,6 +28,17 @@ export default function DashboardLayout({
     } else {
       router.push('/announcements');
     }
+  };
+
+  // Auto-collapse sidebar when entering announcement edit/create pages
+  useEffect(() => {
+    if (pathname.includes('/announcements/new') || pathname.includes('/announcements/') && pathname.includes('/edit')) {
+      setSidebarCollapsed(true);
+    }
+  }, [pathname]);
+
+  const handleToggleSidebar = () => {
+    setSidebarCollapsed(!sidebarCollapsed);
   };
 
   if (loading) {
@@ -54,6 +67,8 @@ export default function DashboardLayout({
         open={true}
         activeItem={getActiveItem()}
         onItemClick={handleNavigation}
+        collapsed={sidebarCollapsed}
+        onToggleCollapse={handleToggleSidebar}
       />
       <Box
         component="main"

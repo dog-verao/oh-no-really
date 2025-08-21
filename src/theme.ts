@@ -237,7 +237,6 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: '8px',
-          margin: '2px 8px',
           '&.Mui-selected': {
             backgroundColor: 'rgba(0, 123, 255, 0.08)',
             color: '#007bff',

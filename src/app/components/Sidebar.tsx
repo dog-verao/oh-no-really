@@ -9,28 +9,33 @@ import {
   Typography,
   useTheme,
   Divider,
-  Avatar
+  Avatar,
+  IconButton,
 } from "@mui/material";
 
 import { useAuth } from '@/contexts/AuthContext';
 import Image from 'next/image';
+
 
 interface SidebarProps {
   open: boolean;
   onClose?: () => void;
   activeItem?: 'announcements' | 'themes';
   onItemClick?: (item: 'announcements' | 'themes') => void;
+  collapsed?: boolean;
+  onToggleCollapse?: () => void;
 }
 
 export const Sidebar = ({
-
   activeItem = 'announcements',
-  onItemClick
+  onItemClick,
+  collapsed = false,
+  onToggleCollapse
 }: SidebarProps) => {
   const theme = useTheme();
   const { user, signOut } = useAuth();
 
-  const drawerWidth = 300;
+  const drawerWidth = collapsed ? 80 : 300;
 
   const menuItems = [
     {
@@ -51,17 +56,36 @@ export const Sidebar = ({
 
   const drawerContent = (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      <Box sx={{ p: 2, borderBottom: `1px solid ${theme.palette.divider}` }}>
-        <Typography
-          variant="h6"
+      <Box sx={{ p: 2, borderBottom: `1px solid ${theme.palette.divider}`, display: 'flex', alignItems: 'center', justifyContent: collapsed ? 'center' : 'space-between' }}>
+        {!collapsed && (
+          <Typography
+            variant="h6"
+            sx={{
+              fontWeight: 600,
+              color: theme.palette.text.primary,
+              fontSize: '1.125rem'
+            }}
+          >
+            Notifications.fyi
+          </Typography>
+        )}
+        <IconButton
+          onClick={onToggleCollapse}
+          size="small"
           sx={{
-            fontWeight: 600,
-            color: theme.palette.text.primary,
-            fontSize: '1.125rem'
+            color: theme.palette.text.secondary,
+            '&:hover': {
+              backgroundColor: 'rgba(0, 0, 0, 0.04)',
+            },
           }}
         >
-          Notifications.fyi
-        </Typography>
+          <Image
+            src={collapsed ? "/illustrations/Notion-Icons/Regular/svg/ni-arrow-right-circle.svg" : "/illustrations/Notion-Icons/Regular/svg/ni-arrow-left-circle.svg"}
+            alt={collapsed ? "Expand" : "Collapse"}
+            width={20}
+            height={20}
+          />
+        </IconButton>
       </Box>
 
       <List sx={{ flex: 1, pt: 1 }}>
@@ -72,6 +96,7 @@ export const Sidebar = ({
               onClick={() => handleItemClick(item.id)}
               sx={{
                 borderRadius: 1,
+                justifyContent: collapsed ? 'center' : 'flex-start',
                 '&.Mui-selected': {
                   backgroundColor: 'rgba(0, 123, 255, 0.08)',
                   color: theme.palette.primary.main,
@@ -87,20 +112,22 @@ export const Sidebar = ({
               <ListItemIcon
                 sx={{
                   color: activeItem === item.id ? theme.palette.primary.main : 'inherit',
-                  minWidth: 36,
+                  minWidth: collapsed ? 0 : 36,
                 }}
               >
                 {item.icon}
               </ListItemIcon>
-              <ListItemText
-                primary={item.label}
-                sx={{
-                  '& .MuiListItemText-primary': {
-                    fontSize: '0.875rem',
-                    fontWeight: activeItem === item.id ? 500 : 400,
-                  },
-                }}
-              />
+              {!collapsed && (
+                <ListItemText
+                  primary={item.label}
+                  sx={{
+                    '& .MuiListItemText-primary': {
+                      fontSize: '0.875rem',
+                      fontWeight: activeItem === item.id ? 500 : 400,
+                    },
+                  }}
+                />
+              )}
             </ListItemButton>
           </ListItem>
         ))}
@@ -109,45 +136,48 @@ export const Sidebar = ({
       <Divider />
 
       <Box sx={{ p: 2 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-          <Avatar
-            sx={{
-              width: 32,
-              height: 32,
-              fontSize: '0.875rem',
-              backgroundColor: theme.palette.primary.main,
-            }}
-          >
-            {user?.email?.charAt(0).toUpperCase()}
-          </Avatar>
-          <Box sx={{ ml: 2, flex: 1 }}>
-            <Typography
-              variant="body2"
+        {!collapsed && (
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+            <Avatar
               sx={{
-                fontWeight: 500,
+                width: 32,
+                height: 32,
                 fontSize: '0.875rem',
-                color: theme.palette.text.primary,
+                backgroundColor: theme.palette.primary.main,
               }}
             >
-              {user?.user_metadata?.name || user?.email}
-            </Typography>
-            <Typography
-              variant="caption"
-              sx={{
-                color: theme.palette.text.secondary,
-                fontSize: '0.75rem',
-              }}
-            >
-              {user?.email}
-            </Typography>
+              {user?.email?.charAt(0).toUpperCase()}
+            </Avatar>
+            <Box sx={{ ml: 2, flex: 1 }}>
+              <Typography
+                variant="body2"
+                sx={{
+                  fontWeight: 500,
+                  fontSize: '0.875rem',
+                  color: theme.palette.text.primary,
+                }}
+              >
+                {user?.user_metadata?.name || user?.email}
+              </Typography>
+              <Typography
+                variant="caption"
+                sx={{
+                  color: theme.palette.text.secondary,
+                  fontSize: '0.75rem',
+                }}
+              >
+                {user?.email}
+              </Typography>
+            </Box>
           </Box>
-        </Box>
+        )}
 
         <ListItem disablePadding>
           <ListItemButton
             onClick={signOut}
             sx={{
               borderRadius: 1,
+              justifyContent: collapsed ? 'center' : 'flex-start',
               '&:hover': {
                 backgroundColor: 'rgba(0, 0, 0, 0.04)',
               },
@@ -155,20 +185,22 @@ export const Sidebar = ({
           >
             <ListItemIcon
               sx={{
-                minWidth: 36,
+                minWidth: collapsed ? 0 : 36,
                 color: theme.palette.text.secondary,
               }}
             >
               <Image src="/illustrations/Notion-Icons/Regular/svg/ni-power-off.svg" alt="Sign out" width={20} height={20} />
             </ListItemIcon>
-            <ListItemText
-              primary="Sign out"
-              sx={{
-                '& .MuiListItemText-primary': {
-                  fontSize: '0.875rem',
-                },
-              }}
-            />
+            {!collapsed && (
+              <ListItemText
+                primary="Sign out"
+                sx={{
+                  '& .MuiListItemText-primary': {
+                    fontSize: '0.875rem',
+                  },
+                }}
+              />
+            )}
           </ListItemButton>
         </ListItem>
       </Box>

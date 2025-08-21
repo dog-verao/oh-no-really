@@ -13,121 +13,118 @@ import {
   Alert,
   Snackbar,
 } from '@mui/material';
-import {
-  Visibility as PreviewIcon,
-  Send as PublishIcon,
-  Save as SaveIcon,
-  ArrowBack as BackIcon,
-} from '@mui/icons-material';
+import { ThemeSelector } from './ThemeSelector';
 import { TiptapEditor } from './TiptapEditor';
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useDebounce } from '../../hooks/useDebounce';
+import { useAnnouncements } from '@/contexts/AnnouncementsProvider';
 
 interface AnnouncementFormProps {
   mode: 'create' | 'edit';
-  initialData?: {
-    title: string;
-    body: string;
-    buttons?: Array<{
-      label: string;
-      type: 'primary' | 'secondary';
-      behavior: 'close' | 'redirect';
-      redirectUrl?: string;
-    }>;
-  };
-  onSubmit: (data: {
-    title: string;
-    content: string;
-    buttons: Array<{
-      label: string;
-      type: 'primary' | 'secondary';
-      behavior: 'close' | 'redirect';
-      redirectUrl?: string;
-    }>;
-  }) => Promise<void>;
-  onCancel?: () => void;
-  isSubmitting: boolean;
-  error?: Error | null;
-  successMessage?: string;
+  accountId: string;
+  onSuccess?: () => void;
 }
 
 export function AnnouncementForm({
   mode,
-  initialData,
-  onSubmit,
-  onCancel,
-  isSubmitting,
-  error,
-  successMessage,
+  accountId,
+  onSuccess,
 }: AnnouncementFormProps) {
   const router = useRouter();
   const [showSuccess, setShowSuccess] = useState(false);
-
-  const [content, setContent] = useState({
-    title: initialData?.title || '',
-    body: initialData?.body || '',
-  });
-  const [buttons, setButtons] = useState<Array<{
-    label: string;
-    type: 'primary' | 'secondary';
-    behavior: 'close' | 'redirect';
-    redirectUrl?: string;
-  }>>(
-    initialData?.buttons || [{ label: 'Got it', type: 'primary', behavior: 'close' }]
-  );
   const [newButtonLabel, setNewButtonLabel] = useState('');
   const [newButtonType, setNewButtonType] = useState<'primary' | 'secondary'>('secondary');
   const [newButtonBehavior, setNewButtonBehavior] = useState<'close' | 'redirect'>('close');
   const [newButtonRedirectUrl, setNewButtonRedirectUrl] = useState('');
 
-  // Debounced content to prevent excessive re-renders
-  const debouncedContent = useDebounce(content, 300);
+  const {
+    formData,
+    updateFormData,
+    createAnnouncement,
+    updateAnnouncement,
+    isCreating,
+    isUpdating,
+    error,
+  } = useAnnouncements();
+
+
 
   const handleSubmit = useCallback(async () => {
-    if (!content.title.trim() || !content.body.trim()) {
+    if (!formData.title.trim() || !formData.content.trim()) {
       return;
     }
 
     try {
-      await onSubmit({
-        title: content.title,
-        content: content.body,
-        buttons,
-      });
-
       if (mode === 'create') {
+        await createAnnouncement(formData);
         setShowSuccess(true);
         // Reset form for create mode
-        setContent({ title: '', body: '' });
+        updateFormData({
+          title: '',
+          content: '',
+          themeId: null,
+          buttons: [{ label: 'Got it', type: 'primary', behavior: 'close' }],
+        });
       } else {
+        // For edit mode, we need the announcement ID from the URL
+        const pathParts = window.location.pathname.split('/');
+        const announcementId = pathParts[pathParts.length - 2]; // /announcements/[id]/edit
+        await updateAnnouncement(announcementId, formData);
         setShowSuccess(true);
+      }
+
+      if (onSuccess) {
+        onSuccess();
       }
     } catch (error) {
       console.error('Failed to submit announcement:', error);
     }
-  }, [content, onSubmit, mode]);
+  }, [formData, mode, createAnnouncement, updateAnnouncement, updateFormData, onSuccess]);
+
+
 
   const handleCancel = useCallback(() => {
-    if (onCancel) {
-      onCancel();
-    } else {
-      router.push('/announcements');
-    }
-  }, [onCancel, router]);
+    router.push('/announcements');
+  }, [router]);
 
   const isFormValid = useMemo(() => {
-    return content.title.trim() && content.body.trim();
-  }, [content.title, content.body]);
+    return formData.title.trim() && formData.content.trim();
+  }, [formData.title, formData.content]);
 
-  const title = mode === 'create' ? 'Create Announcement' : 'Update Announcement';
-  const subtitle = mode === 'create'
-    ? 'Set up your user announcement flow.'
-    : 'Update your announcement settings.';
-  const submitButtonText = isSubmitting
-    ? (mode === 'create' ? 'Publishing...' : 'Saving...')
-    : (mode === 'create' ? 'Publish' : 'Save Changes');
-  const submitIcon = mode === 'create' ? <PublishIcon /> : <SaveIcon />;
+  const addButton = useCallback(() => {
+    if (!newButtonLabel.trim()) return;
+
+    const newButton = {
+      label: newButtonLabel,
+      type: newButtonType,
+      behavior: newButtonBehavior,
+      ...(newButtonBehavior === 'redirect' && { redirectUrl: newButtonRedirectUrl }),
+    };
+
+    updateFormData({
+      buttons: [...formData.buttons, newButton],
+    });
+
+    // Reset form
+    setNewButtonLabel('');
+    setNewButtonType('secondary');
+    setNewButtonBehavior('close');
+    setNewButtonRedirectUrl('');
+  }, [newButtonLabel, newButtonType, newButtonBehavior, newButtonRedirectUrl, formData.buttons, updateFormData]);
+
+  const removeButton = useCallback((index: number) => {
+    updateFormData({
+      buttons: formData.buttons.filter((_, i) => i !== index),
+    });
+  }, [formData.buttons, updateFormData]);
+
+  const updateButton = useCallback((index: number, updates: Partial<typeof formData.buttons[0]>) => {
+    updateFormData({
+      buttons: formData.buttons.map((button, i) =>
+        i === index ? { ...button, ...updates } : button
+      ),
+    });
+  }, [formData.buttons, updateFormData]);
 
   return (
     <Box sx={{ p: 4, pl: 6, maxWidth: 800 }}>
@@ -141,14 +138,27 @@ export function AnnouncementForm({
               fullWidth
               placeholder="Announcement title"
               size="small"
-              value={content.title}
-              onChange={(e) => setContent(prev => ({ ...prev, title: e.target.value }))}
+              value={formData.title}
+              onChange={(e) => updateFormData({ title: e.target.value })}
             />
             <TiptapEditor
-              value={content.body}
-              onChange={(value) => setContent(prev => ({ ...prev, body: value }))}
+              value={formData.content}
+              onChange={(value) => updateFormData({ content: value })}
               placeholder="Write your announcement content here..."
               minHeight={160}
+            />
+          </Stack>
+
+          {/* Theme Selection */}
+          <Stack spacing={2}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 500 }}>
+              Theme
+            </Typography>
+            <ThemeSelector
+              value={formData.themeId}
+              onChange={(themeId) => updateFormData({ themeId })}
+              accountId={accountId}
+              disabled={isCreating || isUpdating}
             />
           </Stack>
 
@@ -158,27 +168,19 @@ export function AnnouncementForm({
               Buttons
             </Typography>
 
-            {buttons.map((button, index) => (
+            {formData.buttons.map((button, index) => (
               <Stack key={index} direction="row" spacing={1} alignItems="center">
                 <TextField
-                  fullWidth
-                  value={button.label}
                   size="small"
-                  onChange={(e) => {
-                    const newButtons = [...buttons];
-                    newButtons[index] = { ...newButtons[index], label: e.target.value };
-                    setButtons(newButtons);
-                  }}
+                  placeholder="Button label"
+                  value={button.label}
+                  onChange={(e) => updateButton(index, { label: e.target.value })}
+                  sx={{ flex: 1 }}
                 />
                 <FormControl size="small" sx={{ minWidth: 120 }}>
                   <Select
                     value={button.type}
-                    onChange={(e) => {
-                      const newButtons = [...buttons];
-                      newButtons[index] = { ...newButtons[index], type: e.target.value as 'primary' | 'secondary' };
-                      setButtons(newButtons);
-                    }}
-                    size="small"
+                    onChange={(e) => updateButton(index, { type: e.target.value as 'primary' | 'secondary' })}
                   >
                     <MenuItem value="primary">Primary</MenuItem>
                     <MenuItem value="secondary">Secondary</MenuItem>
@@ -187,161 +189,102 @@ export function AnnouncementForm({
                 <FormControl size="small" sx={{ minWidth: 120 }}>
                   <Select
                     value={button.behavior}
-                    onChange={(e) => {
-                      const newButtons = [...buttons];
-                      newButtons[index] = {
-                        ...newButtons[index],
-                        behavior: e.target.value as 'close' | 'redirect',
-                        redirectUrl: e.target.value === 'redirect' ? newButtons[index].redirectUrl : undefined
-                      };
-                      setButtons(newButtons);
-                    }}
-                    size="small"
+                    onChange={(e) => updateButton(index, { behavior: e.target.value as 'close' | 'redirect' })}
                   >
-                    <MenuItem value="close">Close Modal</MenuItem>
+                    <MenuItem value="close">Close</MenuItem>
                     <MenuItem value="redirect">Redirect</MenuItem>
                   </Select>
                 </FormControl>
                 {button.behavior === 'redirect' && (
                   <TextField
                     size="small"
-                    placeholder="Redirect URL"
+                    placeholder="URL"
                     value={button.redirectUrl || ''}
-                    onChange={(e) => {
-                      const newButtons = [...buttons];
-                      newButtons[index] = { ...newButtons[index], redirectUrl: e.target.value };
-                      setButtons(newButtons);
-                    }}
+                    onChange={(e) => updateButton(index, { redirectUrl: e.target.value })}
                     sx={{ minWidth: 200 }}
                   />
                 )}
-                {buttons.length > 1 && (
-                  <Button
-                    size="small"
-                    onClick={() => {
-                      const newButtons = buttons.filter((_, i) => i !== index);
-                      setButtons(newButtons);
-                    }}
-                    sx={{ minWidth: 'auto', px: 1 }}
-                  >
-                    Remove
-                  </Button>
-                )}
+                <Button
+                  size="small"
+                  variant="outlined"
+                  color="error"
+                  onClick={() => removeButton(index)}
+                >
+                  Remove
+                </Button>
               </Stack>
             ))}
 
-            <Stack direction="row" spacing={1} alignItems="center">
-              <TextField
-                size="small"
-                placeholder="Button label"
-                value={newButtonLabel}
-                onChange={(e) => setNewButtonLabel(e.target.value)}
-                sx={{ flex: 1 }}
-              />
-              <FormControl size="small" sx={{ minWidth: 120 }}>
-                <Select
-                  value={newButtonType}
-                  onChange={(e) => setNewButtonType(e.target.value as 'primary' | 'secondary')}
-                  size="small"
-                >
-                  <MenuItem value="primary">Primary</MenuItem>
-                  <MenuItem value="secondary">Secondary</MenuItem>
-                </Select>
-              </FormControl>
-              <FormControl size="small" sx={{ minWidth: 120 }}>
-                <Select
-                  value={newButtonBehavior}
-                  onChange={(e) => setNewButtonBehavior(e.target.value as 'close' | 'redirect')}
-                  size="small"
-                >
-                  <MenuItem value="close">Close Modal</MenuItem>
-                  <MenuItem value="redirect">Redirect</MenuItem>
-                </Select>
-              </FormControl>
-              {newButtonBehavior === 'redirect' && (
+            <Divider />
+
+            {/* Add New Button */}
+            <Stack spacing={2}>
+              <Typography variant="body2" color="text.secondary">
+                Add New Button
+              </Typography>
+              <Stack direction="row" spacing={1} alignItems="center">
                 <TextField
                   size="small"
-                  placeholder="Redirect URL"
-                  value={newButtonRedirectUrl}
-                  onChange={(e) => setNewButtonRedirectUrl(e.target.value)}
-                  sx={{ minWidth: 200 }}
+                  placeholder="Button label"
+                  value={newButtonLabel}
+                  onChange={(e) => setNewButtonLabel(e.target.value)}
+                  sx={{ flex: 1 }}
                 />
-              )}
-              <Button
-                variant="outlined"
-                size="small"
-                onClick={() => {
-                  if (newButtonLabel.trim()) {
-                    const newButton = {
-                      label: newButtonLabel.trim(),
-                      type: newButtonType,
-                      behavior: newButtonBehavior,
-                      ...(newButtonBehavior === 'redirect' && { redirectUrl: newButtonRedirectUrl })
-                    };
-                    setButtons([...buttons, newButton]);
-                    setNewButtonLabel('');
-                    setNewButtonRedirectUrl('');
-                  }
-                }}
-                disabled={!newButtonLabel.trim() || (newButtonBehavior === 'redirect' && !newButtonRedirectUrl.trim())}
-              >
-                Add
-              </Button>
+                <FormControl size="small" sx={{ minWidth: 120 }}>
+                  <Select
+                    value={newButtonType}
+                    onChange={(e) => setNewButtonType(e.target.value as 'primary' | 'secondary')}
+                  >
+                    <MenuItem value="primary">Primary</MenuItem>
+                    <MenuItem value="secondary">Secondary</MenuItem>
+                  </Select>
+                </FormControl>
+                <FormControl size="small" sx={{ minWidth: 120 }}>
+                  <Select
+                    value={newButtonBehavior}
+                    onChange={(e) => setNewButtonBehavior(e.target.value as 'close' | 'redirect')}
+                  >
+                    <MenuItem value="close">Close</MenuItem>
+                    <MenuItem value="redirect">Redirect</MenuItem>
+                  </Select>
+                </FormControl>
+                {newButtonBehavior === 'redirect' && (
+                  <TextField
+                    size="small"
+                    placeholder="URL"
+                    value={newButtonRedirectUrl}
+                    onChange={(e) => setNewButtonRedirectUrl(e.target.value)}
+                    sx={{ minWidth: 200 }}
+                  />
+                )}
+                <Button
+                  size="small"
+                  variant="contained"
+                  onClick={addButton}
+                  disabled={!newButtonLabel.trim()}
+                >
+                  Add
+                </Button>
+              </Stack>
             </Stack>
           </Stack>
 
-          <Divider sx={{ my: 2 }} />
+          {/* Error Display */}
+          {error && (
+            <Alert severity="error" sx={{ mt: 2 }}>
+              {error.message}
+            </Alert>
+          )}
 
-          <Stack direction="row" spacing={2} justifyContent="flex-end">
-            <Button
-              variant="outlined"
-              startIcon={<BackIcon />}
-              onClick={handleCancel}
-              sx={{ minWidth: 120 }}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="outlined"
-              startIcon={<PreviewIcon />}
-              sx={{ minWidth: 120 }}
-            >
-              Preview
-            </Button>
-            <Button
-              variant="contained"
-              startIcon={submitIcon}
-              sx={{ minWidth: 120 }}
-              onClick={handleSubmit}
-              disabled={isSubmitting || !isFormValid}
-            >
-              {submitButtonText}
-            </Button>
-          </Stack>
+          {/* Success Snackbar */}
+          <Snackbar
+            open={showSuccess}
+            autoHideDuration={6000}
+            onClose={() => setShowSuccess(false)}
+            message={mode === 'create' ? 'Announcement created successfully!' : 'Announcement updated successfully!'}
+          />
         </Stack>
       </Box>
-
-      <Snackbar
-        open={showSuccess}
-        autoHideDuration={6000}
-        onClose={() => setShowSuccess(false)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-      >
-        <Alert onClose={() => setShowSuccess(false)} severity="success" sx={{ width: '100%' }}>
-          {successMessage || (mode === 'create' ? 'Announcement published successfully!' : 'Announcement updated successfully!')}
-        </Alert>
-      </Snackbar>
-
-      <Snackbar
-        open={!!error}
-        autoHideDuration={6000}
-        onClose={() => { }}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-      >
-        <Alert severity="error" sx={{ width: '100%' }}>
-          Failed to {mode === 'create' ? 'publish' : 'update'} announcement. Please try again.
-        </Alert>
-      </Snackbar>
     </Box>
   );
 }

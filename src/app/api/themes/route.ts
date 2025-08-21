@@ -36,6 +36,9 @@ export async function GET(req: NextRequest) {
     const themes = await prisma.theme.findMany({
       where: {
         accountId: accountId,
+        id: {
+          not: 'default_theme', // Exclude default theme from listing
+        },
       },
     });
 
