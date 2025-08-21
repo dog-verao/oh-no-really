@@ -1,8 +1,9 @@
 'use client';
 
-import { Box } from '@mui/material';
+import { Box, CircularProgress } from '@mui/material';
 import { Sidebar } from '../components/Sidebar';
 import { usePathname, useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function DashboardLayout({
   children,
@@ -11,6 +12,7 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname();
   const router = useRouter();
+  const { user, loading } = useAuth();
 
   // Determine active item based on current path
   const getActiveItem = () => {
@@ -25,6 +27,26 @@ export default function DashboardLayout({
       router.push('/announcements');
     }
   };
+
+  if (loading) {
+    return (
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100vh',
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (!user) {
+    router.push('/auth/signin');
+    return null;
+  }
 
   return (
     <Box sx={{ display: 'flex', height: '100vh' }}>

@@ -7,12 +7,16 @@ import {
   ListItemIcon,
   ListItemText,
   Typography,
-  useTheme
+  useTheme,
+  Divider,
+  Avatar
 } from "@mui/material";
 import {
   Campaign as AnnouncementsIcon,
-  Palette as ThemesIcon
+  Palette as ThemesIcon,
+  Logout as LogoutIcon
 } from "@mui/icons-material";
+import { useAuth } from '@/contexts/AuthContext';
 
 interface SidebarProps {
   open: boolean;
@@ -22,12 +26,12 @@ interface SidebarProps {
 }
 
 export const Sidebar = ({
-  open,
-  onClose,
+
   activeItem = 'announcements',
   onItemClick
 }: SidebarProps) => {
   const theme = useTheme();
+  const { user, signOut } = useAuth();
 
   const drawerWidth = 300;
 
@@ -59,7 +63,7 @@ export const Sidebar = ({
             fontSize: '1.125rem'
           }}
         >
-          Userflow
+          Notifications.fyi
         </Typography>
       </Box>
 
@@ -104,6 +108,74 @@ export const Sidebar = ({
           </ListItem>
         ))}
       </List>
+
+      <Divider />
+
+      {/* User section */}
+      <Box sx={{ p: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+          <Avatar
+            sx={{
+              width: 32,
+              height: 32,
+              fontSize: '0.875rem',
+              backgroundColor: theme.palette.primary.main,
+            }}
+          >
+            {user?.email?.charAt(0).toUpperCase()}
+          </Avatar>
+          <Box sx={{ ml: 2, flex: 1 }}>
+            <Typography
+              variant="body2"
+              sx={{
+                fontWeight: 500,
+                fontSize: '0.875rem',
+                color: theme.palette.text.primary,
+              }}
+            >
+              {user?.user_metadata?.name || user?.email}
+            </Typography>
+            <Typography
+              variant="caption"
+              sx={{
+                color: theme.palette.text.secondary,
+                fontSize: '0.75rem',
+              }}
+            >
+              {user?.email}
+            </Typography>
+          </Box>
+        </Box>
+
+        <ListItem disablePadding>
+          <ListItemButton
+            onClick={signOut}
+            sx={{
+              borderRadius: 1,
+              '&:hover': {
+                backgroundColor: 'rgba(0, 0, 0, 0.04)',
+              },
+            }}
+          >
+            <ListItemIcon
+              sx={{
+                minWidth: 36,
+                color: theme.palette.text.secondary,
+              }}
+            >
+              <LogoutIcon />
+            </ListItemIcon>
+            <ListItemText
+              primary="Sign out"
+              sx={{
+                '& .MuiListItemText-primary': {
+                  fontSize: '0.875rem',
+                },
+              }}
+            />
+          </ListItemButton>
+        </ListItem>
+      </Box>
     </Box>
   );
 
