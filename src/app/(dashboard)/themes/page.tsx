@@ -8,13 +8,11 @@ import {
   IconButton,
   Stack,
   CircularProgress,
+  Menu,
+  MenuItem,
 } from '@mui/material';
-import {
-  Add as AddIcon,
-  Visibility as ViewIcon,
-  Edit as EditIcon,
-  Delete as DeleteIcon,
-} from '@mui/icons-material';
+
+import Image from 'next/image';
 import { DataGrid, GridColDef, GridRowParams } from '@mui/x-data-grid';
 import { Header } from '../../components/Header';
 import { useThemeQueries } from '@/hooks/useThemeQueries';
@@ -28,6 +26,8 @@ export default function ThemesPage() {
   const accountId = 'account_1';
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [themeToDelete, setThemeToDelete] = useState<string | null>(null);
+  const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
+  const [selectedThemeId, setSelectedThemeId] = useState<string | null>(null);
 
   const {
     themes,
@@ -70,6 +70,17 @@ export default function ThemesPage() {
     setThemeToDelete(null);
   };
 
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, themeId: string) => {
+    event.stopPropagation();
+    setMenuAnchorEl(event.currentTarget);
+    setSelectedThemeId(themeId);
+  };
+
+  const handleMenuClose = () => {
+    setMenuAnchorEl(null);
+    setSelectedThemeId(null);
+  };
+
   const columns: GridColDef[] = [
     {
       field: 'name',
@@ -96,47 +107,27 @@ export default function ThemesPage() {
     {
       field: 'actions',
       headerName: 'Actions',
-      width: 200,
+      width: 100,
       sortable: false,
       renderCell: (params) => {
         return (
-          <Stack direction="row" spacing={1}>
-            <IconButton
-              size="small"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleViewTheme(params.row.id);
-              }}
-              sx={{ color: 'primary.main' }}
-            >
-              <ViewIcon />
-            </IconButton>
-            <IconButton
-              size="small"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleEditTheme(params.row.id);
-              }}
-              sx={{ color: 'warning.main' }}
-            >
-              <EditIcon />
-            </IconButton>
-            <IconButton
-              size="small"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleDeleteClick(params.row.id);
-              }}
-              disabled={isDeleting}
-              sx={{ color: 'error.main' }}
-            >
-              {isDeleting ? (
-                <CircularProgress size={16} />
-              ) : (
-                <DeleteIcon />
-              )}
-            </IconButton>
-          </Stack>
+          <IconButton
+            size="small"
+            onClick={(e) => handleMenuOpen(e, params.row.id)}
+            sx={{
+              transform: 'rotate(90deg)',
+              '&:hover': {
+                backgroundColor: 'rgba(0, 0, 0, 0.04)',
+              },
+            }}
+          >
+            <Image
+              src="/illustrations/Notion-Icons/Regular/svg/ni-ellipsis-fill.svg"
+              alt="Actions"
+              width={16}
+              height={16}
+            />
+          </IconButton>
         );
       },
     },
@@ -199,7 +190,7 @@ export default function ThemesPage() {
             </Typography>
             <Button
               variant="contained"
-              startIcon={<AddIcon />}
+              startIcon={<Image src="/illustrations/Notion-Icons/Regular/svg/ni-plus.svg" alt="Add" width={20} height={20} />}
               onClick={handleCreateNew}
             >
               Create Theme
@@ -210,7 +201,7 @@ export default function ThemesPage() {
             <Box sx={{ mb: 2, display: 'flex', justifyContent: 'flex-end' }}>
               <Button
                 variant="contained"
-                startIcon={<AddIcon />}
+                startIcon={<Image src="/illustrations/Notion-Icons/Regular/svg/ni-plus.svg" alt="Add" width={20} height={20} />}
                 onClick={handleCreateNew}
               >
                 Create Theme
@@ -249,6 +240,73 @@ export default function ThemesPage() {
         isLoading={isDeleting}
         severity="warning"
       />
+
+      <Menu
+        anchorEl={menuAnchorEl}
+        open={Boolean(menuAnchorEl)}
+        onClose={handleMenuClose}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+      >
+        <MenuItem
+          onClick={() => {
+            if (selectedThemeId) {
+              handleViewTheme(selectedThemeId);
+            }
+            handleMenuClose();
+          }}
+        >
+          <Image
+            src="/illustrations/Notion-Icons/Regular/svg/ni-full-page.svg"
+            alt="View"
+            width={16}
+            height={16}
+            style={{ marginRight: 8 }}
+          />
+          View
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            if (selectedThemeId) {
+              handleEditTheme(selectedThemeId);
+            }
+            handleMenuClose();
+          }}
+        >
+          <Image
+            src="/illustrations/Notion-Icons/Regular/svg/ni-pencil.svg"
+            alt="Edit"
+            width={16}
+            height={16}
+            style={{ marginRight: 8 }}
+          />
+          Edit
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            if (selectedThemeId) {
+              handleDeleteClick(selectedThemeId);
+            }
+            handleMenuClose();
+          }}
+          sx={{ color: 'error.main' }}
+        >
+          <Image
+            src="/illustrations/Notion-Icons/Regular/svg/ni-delete-left.svg"
+            alt="Delete"
+            width={16}
+            height={16}
+            style={{ marginRight: 8 }}
+          />
+          Delete
+        </MenuItem>
+      </Menu>
     </Box>
   );
 }

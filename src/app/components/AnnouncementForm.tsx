@@ -133,7 +133,6 @@ export function AnnouncementForm({
     <Box sx={{ p: 4, pl: 6, maxWidth: 800 }}>
       <Box sx={{ mt: 4 }}>
         <Stack spacing={4}>
-          {/* Content Fields */}
           <Stack spacing={2}>
             <Typography variant="subtitle2" sx={{ fontWeight: 500 }}>
               Content

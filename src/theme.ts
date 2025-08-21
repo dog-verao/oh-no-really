@@ -277,17 +277,12 @@ const theme = createTheme({
     MuiChip: {
       styleOverrides: {
         root: {
-          borderRadius: '6px',
-          fontSize: '0.75rem',
-          fontWeight: 500,
+          borderRadius: '12px',
+          fontSize: '0.875rem',
+          fontWeight: 600,
+          padding: '4px 12px',
         },
-        filled: {
-          backgroundColor: '#f3f4f6',
-          color: '#374151',
-          '&:hover': {
-            backgroundColor: '#e5e7eb',
-          },
-        },
+
       },
     },
     MuiTooltip: {

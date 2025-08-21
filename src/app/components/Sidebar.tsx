@@ -11,12 +11,9 @@ import {
   Divider,
   Avatar
 } from "@mui/material";
-import {
-  Campaign as AnnouncementsIcon,
-  Palette as ThemesIcon,
-  Logout as LogoutIcon
-} from "@mui/icons-material";
+
 import { useAuth } from '@/contexts/AuthContext';
+import Image from 'next/image';
 
 interface SidebarProps {
   open: boolean;
@@ -39,12 +36,12 @@ export const Sidebar = ({
     {
       id: 'announcements' as const,
       label: 'Announcements',
-      icon: <AnnouncementsIcon />,
+      icon: <Image src="/illustrations/Notion-Icons/Regular/svg/ni-rocket.svg" alt="Announcements" width={20} height={20} />,
     },
     {
       id: 'themes' as const,
       label: 'Themes',
-      icon: <ThemesIcon />,
+      icon: <Image src="/illustrations/Notion-Icons/Regular/svg/ni-layout-column.svg" alt="Themes" width={20} height={20} />,
     },
   ];
 
@@ -111,7 +108,6 @@ export const Sidebar = ({
 
       <Divider />
 
-      {/* User section */}
       <Box sx={{ p: 2 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
           <Avatar
@@ -163,7 +159,7 @@ export const Sidebar = ({
                 color: theme.palette.text.secondary,
               }}
             >
-              <LogoutIcon />
+              <Image src="/illustrations/Notion-Icons/Regular/svg/ni-power-off.svg" alt="Sign out" width={20} height={20} />
             </ListItemIcon>
             <ListItemText
               primary="Sign out"

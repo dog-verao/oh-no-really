@@ -8,13 +8,12 @@ import {
   IconButton,
   Stack,
   CircularProgress,
+  Menu,
+  MenuItem,
+  Chip,
 } from '@mui/material';
-import {
-  Add as AddIcon,
-  Visibility as ViewIcon,
-  Edit as EditIcon,
-  Delete as DeleteIcon,
-} from '@mui/icons-material';
+
+import Image from 'next/image';
 import { DataGrid, GridColDef, GridRowParams } from '@mui/x-data-grid';
 import { Header } from '../../components/Header';
 import { useAnnouncements } from '@/hooks/useAnnouncements';
@@ -28,6 +27,8 @@ export default function AnnouncementsPage() {
   const accountId = 'account_1';
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [announcementToDelete, setAnnouncementToDelete] = useState<string | null>(null);
+  const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
+  const [selectedAnnouncementId, setSelectedAnnouncementId] = useState<string | null>(null);
 
   const {
     announcements,
@@ -74,6 +75,17 @@ export default function AnnouncementsPage() {
     setAnnouncementToDelete(null);
   };
 
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, announcementId: string) => {
+    event.stopPropagation();
+    setMenuAnchorEl(event.currentTarget);
+    setSelectedAnnouncementId(announcementId);
+  };
+
+  const handleMenuClose = () => {
+    setMenuAnchorEl(null);
+    setSelectedAnnouncementId(null);
+  };
+
   const columns: GridColDef[] = [
     {
       field: 'title',
@@ -89,16 +101,9 @@ export default function AnnouncementsPage() {
       renderCell: (params) => {
         const message = params.value as string;
         return (
-          <Typography
-            sx={{
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-              maxWidth: '100%',
-            }}
-          >
-            {message}
-          </Typography>
+          <Stack direction="row" spacing={1}>
+            {message.slice(0, 100)}...
+          </Stack>
         );
       },
     },
@@ -126,61 +131,43 @@ export default function AnnouncementsPage() {
       renderCell: (params) => {
         const isDraft = params.value as boolean;
         return (
-          <Typography
+          <Chip
+            variant="outlined"
+            label={isDraft ? 'Draft' : 'Published'}
+            color={isDraft ? 'warning' : 'success'}
+            size="small"
             sx={{
-              color: isDraft ? 'warning.main' : 'success.main',
+              fontSize: '0.75rem',
               fontWeight: 500,
             }}
-          >
-            {isDraft ? 'Draft' : 'Published'}
-          </Typography>
+          />
         );
       },
     },
     {
       field: 'actions',
       headerName: 'Actions',
-      width: 200,
+      width: 100,
       sortable: false,
       renderCell: (params) => {
         return (
-          <Stack direction="row" spacing={1}>
-            <IconButton
-              size="small"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleViewAnnouncement(params.row.id);
-              }}
-              sx={{ color: 'primary.main' }}
-            >
-              <ViewIcon />
-            </IconButton>
-            <IconButton
-              size="small"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleEditAnnouncement(params.row.id);
-              }}
-              sx={{ color: 'warning.main' }}
-            >
-              <EditIcon />
-            </IconButton>
-            <IconButton
-              size="small"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleDeleteClick(params.row.id);
-              }}
-              disabled={isDeleting}
-              sx={{ color: 'error.main' }}
-            >
-              {isDeleting ? (
-                <CircularProgress size={16} />
-              ) : (
-                <DeleteIcon />
-              )}
-            </IconButton>
-          </Stack>
+          <IconButton
+            size="small"
+            onClick={(e) => handleMenuOpen(e, params.row.id)}
+            sx={{
+              transform: 'rotate(90deg)',
+              '&:hover': {
+                backgroundColor: 'rgba(0, 0, 0, 0.04)',
+              },
+            }}
+          >
+            <Image
+              src="/illustrations/Notion-Icons/Regular/svg/ni-ellipsis-fill.svg"
+              alt="Actions"
+              width={16}
+              height={16}
+            />
+          </IconButton>
         );
       },
     },
@@ -243,7 +230,7 @@ export default function AnnouncementsPage() {
             </Typography>
             <Button
               variant="contained"
-              startIcon={<AddIcon />}
+              startIcon={<Image src="/illustrations/Notion-Icons/Regular/svg/ni-plus.svg" alt="Add" width={20} height={20} />}
               onClick={handleCreateNew}
             >
               Create Announcement
@@ -254,7 +241,7 @@ export default function AnnouncementsPage() {
             <Box sx={{ mb: 2, display: 'flex', justifyContent: 'flex-end' }}>
               <Button
                 variant="contained"
-                startIcon={<AddIcon />}
+                startIcon={<Image src="/illustrations/Notion-Icons/Regular/svg/ni-plus.svg" alt="Add" width={20} height={20} />}
                 onClick={handleCreateNew}
               >
                 Create Announcement
@@ -293,6 +280,73 @@ export default function AnnouncementsPage() {
         isLoading={isDeleting}
         severity="warning"
       />
+
+      <Menu
+        anchorEl={menuAnchorEl}
+        open={Boolean(menuAnchorEl)}
+        onClose={handleMenuClose}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+      >
+        <MenuItem
+          onClick={() => {
+            if (selectedAnnouncementId) {
+              handleViewAnnouncement(selectedAnnouncementId);
+            }
+            handleMenuClose();
+          }}
+        >
+          <Image
+            src="/illustrations/Notion-Icons/Regular/svg/ni-full-page.svg"
+            alt="View"
+            width={16}
+            height={16}
+            style={{ marginRight: 8 }}
+          />
+          View
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            if (selectedAnnouncementId) {
+              handleEditAnnouncement(selectedAnnouncementId);
+            }
+            handleMenuClose();
+          }}
+        >
+          <Image
+            src="/illustrations/Notion-Icons/Regular/svg/ni-pencil.svg"
+            alt="Edit"
+            width={16}
+            height={16}
+            style={{ marginRight: 8 }}
+          />
+          Edit
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            if (selectedAnnouncementId) {
+              handleDeleteClick(selectedAnnouncementId);
+            }
+            handleMenuClose();
+          }}
+          sx={{ color: 'error.main' }}
+        >
+          <Image
+            src="/illustrations/Notion-Icons/Regular/svg/ni-delete-left.svg"
+            alt="Delete"
+            width={16}
+            height={16}
+            style={{ marginRight: 8 }}
+          />
+          Delete
+        </MenuItem>
+      </Menu>
     </Box>
   );
 }
