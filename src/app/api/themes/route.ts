@@ -9,21 +9,19 @@ export async function POST(req: NextRequest) {
     // For now, we'll use a hardcoded account ID until we implement proper auth
     const accountId = 'account_1'; // This should come from the authenticated user's session
 
-    const announcement = await prisma.announcement.create({
+    const theme = await prisma.theme.create({
       data: {
-        title: body.title,
-        message: body.content,
-        themeId: body.themeId,
-        accountId: accountId, // Use accountId from headers for security
-        buttons: body.buttons || null,
+        name: body.name,
+        config: body.config,
+        accountId: accountId,
       },
     });
 
-    return NextResponse.json(announcement);
+    return NextResponse.json(theme);
   } catch (error) {
-    console.error('Error creating announcement:', error);
+    console.error('Error creating theme:', error);
     return NextResponse.json(
-      { error: 'Failed to create announcement', details: error instanceof Error ? error.message : 'Unknown error' },
+      { error: 'Failed to create theme', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }
@@ -35,17 +33,17 @@ export async function GET(req: NextRequest) {
     // For now, we'll use a hardcoded account ID until we implement proper auth
     const accountId = 'account_1'; // This should come from the authenticated user's session
 
-    const announcements = await prisma.announcement.findMany({
+    const themes = await prisma.theme.findMany({
       where: {
         accountId: accountId,
       },
     });
 
-    return NextResponse.json(announcements);
+    return NextResponse.json(themes);
   } catch (error) {
-    console.error('Error fetching announcements:', error);
+    console.error('Error fetching themes:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch announcements' },
+      { error: 'Failed to fetch themes' },
       { status: 500 }
     );
   }

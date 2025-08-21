@@ -30,6 +30,12 @@ export default function EditAnnouncementPage() {
   const [content, setContent] = useState({
     title: '',
     body: '',
+    buttons: [] as Array<{
+      label: string;
+      type: 'primary' | 'secondary';
+      behavior: 'close' | 'redirect';
+      redirectUrl?: string;
+    }>,
   });
   const [isLoading, setIsLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
@@ -45,6 +51,12 @@ export default function EditAnnouncementPage() {
           setContent({
             title: announcement.title || '',
             body: announcement.message || '',
+            buttons: (announcement.buttons as Array<{
+              label: string;
+              type: 'primary' | 'secondary';
+              behavior: 'close' | 'redirect';
+              redirectUrl?: string;
+            }>) || [],
           });
         } else {
           setNotFound(true);
@@ -65,13 +77,18 @@ export default function EditAnnouncementPage() {
   const handleSubmit = async (data: {
     title: string;
     content: string;
-    type: 'modal' | 'banner' | 'tooltip';
-    pagePattern: string;
+    buttons: Array<{
+      label: string;
+      type: 'primary' | 'secondary';
+      behavior: 'close' | 'redirect';
+      redirectUrl?: string;
+    }>;
   }) => {
     await updateAnnouncementAsync({
       id: announcementId,
       title: data.title,
       content: data.content,
+      buttons: data.buttons,
     });
   };
 

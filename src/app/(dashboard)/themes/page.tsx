@@ -2,270 +2,253 @@
 
 import {
   Box,
-  Stack,
-  Typography,
-  TextField,
-  Paper,
   Button,
-  Grid,
+  Typography,
+  Paper,
+  IconButton,
+  Stack,
+  CircularProgress,
 } from '@mui/material';
+import {
+  Add as AddIcon,
+  Visibility as ViewIcon,
+  Edit as EditIcon,
+  Delete as DeleteIcon,
+} from '@mui/icons-material';
+import { DataGrid, GridColDef, GridRowParams } from '@mui/x-data-grid';
 import { Header } from '../../components/Header';
-import { ColorPicker } from '../../components/ColorPicker';
+import { useThemeQueries } from '@/hooks/useThemeQueries';
+import { useRouter } from 'next/navigation';
+import dayjs from 'dayjs';
 import { useState } from 'react';
-
-interface ThemeConfig {
-  modal: {
-    backgroundColor: string;
-    borderRadius: string;
-    titleColor: string;
-  };
-  button: {
-    backgroundColor: string;
-    textColor: string;
-    borderRadius: string;
-  };
-  secondaryButton: {
-    backgroundColor: string;
-    textColor: string;
-    borderColor: string;
-    borderRadius: string;
-  };
-}
+import { ConfirmationModal } from '../../components/ConfirmationModal';
 
 export default function ThemesPage() {
-  const [themeConfig, setThemeConfig] = useState<ThemeConfig>({
-    modal: {
-      backgroundColor: '#ffffff',
-      borderRadius: '12px',
-      titleColor: '#1a1a1a',
-    },
-    button: {
-      backgroundColor: '#007bff',
-      textColor: '#ffffff',
-      borderRadius: '8px',
-    },
-    secondaryButton: {
-      backgroundColor: '#ffffff',
-      textColor: '#007bff',
-      borderColor: '#007bff',
-      borderRadius: '8px',
-    },
-  });
+  const router = useRouter();
+  const accountId = 'account_1';
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [themeToDelete, setThemeToDelete] = useState<string | null>(null);
 
-  const updateModalConfig = (field: keyof ThemeConfig['modal'], value: string) => {
-    setThemeConfig(prev => ({
-      ...prev,
-      modal: { ...prev.modal, [field]: value }
-    }));
+  const {
+    themes,
+    isLoading,
+    error,
+    deleteTheme,
+    isDeleting,
+  } = useThemeQueries(accountId);
+
+  const handleCreateNew = () => {
+    router.push('/themes/new');
   };
 
-  const updateButtonConfig = (field: keyof ThemeConfig['button'], value: string) => {
-    setThemeConfig(prev => ({
-      ...prev,
-      button: { ...prev.button, [field]: value }
-    }));
+  const handleViewTheme = (themeId: string) => {
+    router.push(`/themes/${themeId}`);
   };
 
-  const updateSecondaryButtonConfig = (field: keyof ThemeConfig['secondaryButton'], value: string) => {
-    setThemeConfig(prev => ({
-      ...prev,
-      secondaryButton: { ...prev.secondaryButton, [field]: value }
-    }));
+  const handleEditTheme = (themeId: string) => {
+    router.push(`/themes/${themeId}/edit`);
   };
+
+  const handleDeleteClick = (themeId: string) => {
+    setThemeToDelete(themeId);
+    setDeleteModalOpen(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (themeToDelete) {
+      deleteTheme(themeToDelete, {
+        onSuccess: () => {
+          setDeleteModalOpen(false);
+          setThemeToDelete(null);
+        }
+      });
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteModalOpen(false);
+    setThemeToDelete(null);
+  };
+
+  const columns: GridColDef[] = [
+    {
+      field: 'name',
+      headerName: 'Name',
+      flex: 1,
+      minWidth: 200,
+    },
+    {
+      field: 'createdAt',
+      headerName: 'Created',
+      width: 150,
+      renderCell: (params) => {
+        return dayjs(params.value).format('MMM DD, YYYY');
+      },
+    },
+    {
+      field: 'updatedAt',
+      headerName: 'Updated',
+      width: 150,
+      renderCell: (params) => {
+        return dayjs(params.value).format('MMM DD, YYYY');
+      },
+    },
+    {
+      field: 'actions',
+      headerName: 'Actions',
+      width: 200,
+      sortable: false,
+      renderCell: (params) => {
+        return (
+          <Stack direction="row" spacing={1}>
+            <IconButton
+              size="small"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleViewTheme(params.row.id);
+              }}
+              sx={{ color: 'primary.main' }}
+            >
+              <ViewIcon />
+            </IconButton>
+            <IconButton
+              size="small"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleEditTheme(params.row.id);
+              }}
+              sx={{ color: 'warning.main' }}
+            >
+              <EditIcon />
+            </IconButton>
+            <IconButton
+              size="small"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDeleteClick(params.row.id);
+              }}
+              disabled={isDeleting}
+              sx={{ color: 'error.main' }}
+            >
+              {isDeleting ? (
+                <CircularProgress size={16} />
+              ) : (
+                <DeleteIcon />
+              )}
+            </IconButton>
+          </Stack>
+        );
+      },
+    },
+  ];
+
+  if (isLoading) {
+    return (
+      <Box sx={{ p: 4, pl: 6 }}>
+        <Header
+          title="Themes"
+          subtitle="Manage your custom themes."
+        />
+        <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
+          <Typography>Loading themes...</Typography>
+        </Box>
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box sx={{ p: 4, pl: 6 }}>
+        <Header
+          title="Themes"
+          subtitle="Manage your custom themes."
+        />
+        <Box sx={{ mt: 4 }}>
+          <Typography color="error">
+            Error loading themes: {error.message}
+          </Typography>
+        </Box>
+      </Box>
+    );
+  }
 
   return (
-    <Box sx={{ p: 4, pl: 6, maxWidth: 1200 }}>
+    <Box sx={{ p: 4, pl: 6 }}>
       <Header
         title="Themes"
-        subtitle="Customize the appearance of your components."
+        subtitle="Manage your custom themes."
       />
 
       <Box sx={{ mt: 4 }}>
-        <Stack direction="column" spacing={4}>
-          <Stack direction="column" spacing={4}>
-            <Typography variant="h6" sx={{ fontWeight: 600 }}>
-              Modal
+        {themes.length === 0 ? (
+          <Paper
+            sx={{
+              p: 6,
+              textAlign: 'center',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 2,
+            }}
+          >
+            <Typography variant="h6" color="text.secondary">
+              No themes found
             </Typography>
-            <Stack spacing={3} direction="row" alignItems="center">
-              <ColorPicker
-                label="Background Color"
-                value={themeConfig.modal.backgroundColor}
-                onChange={(value) => updateModalConfig('backgroundColor', value)}
-              />
-
-              <TextField
-                label="Border Radius"
-                value={themeConfig.modal.borderRadius}
-                onChange={(e) => updateModalConfig('borderRadius', e.target.value)}
-                size="small"
-              />
-
-              <ColorPicker
-                label="Title Color"
-                value={themeConfig.modal.titleColor}
-                onChange={(value) => updateModalConfig('titleColor', value)}
-              />
-            </Stack>
-          </Stack>
-
-          <Stack direction="row" justifyContent="center" spacing={4}>
-            <Paper
-              elevation={2}
-              sx={{
-                backgroundColor: themeConfig.modal.backgroundColor,
-                borderRadius: themeConfig.modal.borderRadius,
-                p: 3,
-                maxWidth: 300,
-              }}
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              Create your first theme to get started.
+            </Typography>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={handleCreateNew}
             >
-              <Typography
-                variant="h6"
-                sx={{
-                  fontWeight: 600,
-                  color: themeConfig.modal.titleColor,
-                  mb: 2,
-                }}
-              >
-                Preview Modal
-              </Typography>
-              <Typography
-                variant="body2"
-                sx={{
-                  color: themeConfig.modal.titleColor,
-                  mb: 3,
-                  opacity: 0.7,
-                }}
-              >
-                This is how your modal will appear to users.
-              </Typography>
-              <Stack direction="row" spacing={1}>
-                <Button
-                  variant="contained"
-                  size="small"
-                  sx={{
-                    backgroundColor: themeConfig.button.backgroundColor,
-                    color: themeConfig.button.textColor,
-                    borderRadius: themeConfig.button.borderRadius,
-                    '&:hover': {
-                      backgroundColor: themeConfig.button.backgroundColor,
-                      opacity: 0.9,
-                    },
-                  }}
-                >
-                  Primary
-                </Button>
-                <Button
-                  variant="outlined"
-                  size="small"
-                  sx={{
-                    borderColor: themeConfig.button.backgroundColor,
-                    color: themeConfig.button.backgroundColor,
-                    borderRadius: themeConfig.button.borderRadius,
-                    '&:hover': {
-                      borderColor: themeConfig.button.backgroundColor,
-                      backgroundColor: `${themeConfig.button.backgroundColor}10`,
-                    },
-                  }}
-                >
-                  Secondary
-                </Button>
-              </Stack>
-            </Paper>
-          </Stack>
-
-          <Stack direction="column" spacing={4}>
-            <Typography variant="h6" sx={{ fontWeight: 600 }}>
-              Primary Button
-            </Typography>
-            <Stack spacing={3} direction="row" alignItems="center">
-              <ColorPicker
-                label="Background Color"
-                value={themeConfig.button.backgroundColor}
-                onChange={(value) => updateButtonConfig('backgroundColor', value)}
-              />
-
-              <ColorPicker
-                label="Text Color"
-                value={themeConfig.button.textColor}
-                onChange={(value) => updateButtonConfig('textColor', value)}
-              />
-
-              <TextField
-                label="Border Radius"
-                value={themeConfig.button.borderRadius}
-                onChange={(e) => updateButtonConfig('borderRadius', e.target.value)}
-                size="small"
-              />
-            </Stack>
-          </Stack>
-
-          <Stack direction="column" spacing={4}>
-            <Typography variant="h6" sx={{ fontWeight: 600 }}>
-              Secondary Button
-            </Typography>
-            <Stack spacing={3} direction="row" alignItems="center">
-              <ColorPicker
-                label="Background Color"
-                value={themeConfig.secondaryButton.backgroundColor}
-                onChange={(value) => updateSecondaryButtonConfig('backgroundColor', value)}
-              />
-
-              <ColorPicker
-                label="Text Color"
-                value={themeConfig.secondaryButton.textColor}
-                onChange={(value) => updateSecondaryButtonConfig('textColor', value)}
-              />
-
-              <ColorPicker
-                label="Border Color"
-                value={themeConfig.secondaryButton.borderColor}
-                onChange={(value) => updateSecondaryButtonConfig('borderColor', value)}
-              />
-
-              <TextField
-                label="Border Radius"
-                value={themeConfig.secondaryButton.borderRadius}
-                onChange={(e) => updateSecondaryButtonConfig('borderRadius', e.target.value)}
-                size="small"
-              />
-            </Stack>
-          </Stack>
-
-          <Stack direction="row" spacing={4} justifyContent="center">
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, minHeight: 100 }}>
+              Create Theme
+            </Button>
+          </Paper>
+        ) : (
+          <>
+            <Box sx={{ mb: 2, display: 'flex', justifyContent: 'flex-end' }}>
               <Button
                 variant="contained"
-                sx={{
-                  backgroundColor: themeConfig.button.backgroundColor,
-                  color: themeConfig.button.textColor,
-                  borderRadius: themeConfig.button.borderRadius,
-                  '&:hover': {
-                    backgroundColor: themeConfig.button.backgroundColor,
-                    opacity: 0.9,
-                  },
-                }}
+                startIcon={<AddIcon />}
+                onClick={handleCreateNew}
               >
-                Primary Button
-              </Button>
-              <Button
-                variant="outlined"
-                sx={{
-                  backgroundColor: themeConfig.secondaryButton.backgroundColor,
-                  borderColor: themeConfig.secondaryButton.borderColor,
-                  color: themeConfig.secondaryButton.textColor,
-                  borderRadius: themeConfig.secondaryButton.borderRadius,
-                  '&:hover': {
-                    borderColor: themeConfig.secondaryButton.borderColor,
-                    backgroundColor: `${themeConfig.secondaryButton.borderColor}10`,
-                  },
-                }}
-              >
-                Secondary Button
+                Create Theme
               </Button>
             </Box>
-          </Stack>
-        </Stack>
+            <Paper sx={{ height: 600, width: '100%' }}>
+              <DataGrid
+                rows={themes}
+                columns={columns}
+                getRowId={(row) => row.id}
+                pageSizeOptions={[10, 25, 50]}
+                initialState={{
+                  pagination: {
+                    paginationModel: { page: 0, pageSize: 10 },
+                  },
+                }}
+                sx={{
+                  '& .MuiDataGrid-row': {
+                    cursor: 'default',
+                  },
+                }}
+              />
+            </Paper>
+          </>
+        )}
       </Box>
+
+      <ConfirmationModal
+        open={deleteModalOpen}
+        onClose={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Theme"
+        message="Are you sure you want to delete this theme? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        isLoading={isDeleting}
+        severity="warning"
+      />
     </Box>
   );
 }

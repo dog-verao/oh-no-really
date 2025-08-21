@@ -5,24 +5,36 @@ import {
   Button,
   Typography,
   Paper,
+  IconButton,
+  Stack,
+  CircularProgress,
 } from '@mui/material';
 import {
   Add as AddIcon,
+  Visibility as ViewIcon,
+  Edit as EditIcon,
+  Delete as DeleteIcon,
 } from '@mui/icons-material';
 import { DataGrid, GridColDef, GridRowParams } from '@mui/x-data-grid';
 import { Header } from '../../components/Header';
 import { useAnnouncements } from '@/hooks/useAnnouncements';
 import { useRouter } from 'next/navigation';
 import dayjs from 'dayjs';
+import { useState } from 'react';
+import { ConfirmationModal } from '../../components/ConfirmationModal';
 
 export default function AnnouncementsPage() {
   const router = useRouter();
   const accountId = 'account_1';
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [announcementToDelete, setAnnouncementToDelete] = useState<string | null>(null);
 
   const {
     announcements,
     isLoading,
     error,
+    deleteAnnouncement,
+    isDeleting,
   } = useAnnouncements(accountId);
 
   const handleRowClick = (params: GridRowParams) => {
@@ -33,7 +45,34 @@ export default function AnnouncementsPage() {
     router.push('/announcements/new');
   };
 
+  const handleViewAnnouncement = (announcementId: string) => {
+    router.push(`/announcements/${announcementId}`);
+  };
 
+  const handleEditAnnouncement = (announcementId: string) => {
+    router.push(`/announcements/${announcementId}/edit`);
+  };
+
+  const handleDeleteClick = (announcementId: string) => {
+    setAnnouncementToDelete(announcementId);
+    setDeleteModalOpen(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (announcementToDelete) {
+      deleteAnnouncement(announcementToDelete, {
+        onSuccess: () => {
+          setDeleteModalOpen(false);
+          setAnnouncementToDelete(null);
+        }
+      });
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteModalOpen(false);
+    setAnnouncementToDelete(null);
+  };
 
   const columns: GridColDef[] = [
     {
@@ -95,6 +134,53 @@ export default function AnnouncementsPage() {
           >
             {isDraft ? 'Draft' : 'Published'}
           </Typography>
+        );
+      },
+    },
+    {
+      field: 'actions',
+      headerName: 'Actions',
+      width: 200,
+      sortable: false,
+      renderCell: (params) => {
+        return (
+          <Stack direction="row" spacing={1}>
+            <IconButton
+              size="small"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleViewAnnouncement(params.row.id);
+              }}
+              sx={{ color: 'primary.main' }}
+            >
+              <ViewIcon />
+            </IconButton>
+            <IconButton
+              size="small"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleEditAnnouncement(params.row.id);
+              }}
+              sx={{ color: 'warning.main' }}
+            >
+              <EditIcon />
+            </IconButton>
+            <IconButton
+              size="small"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDeleteClick(params.row.id);
+              }}
+              disabled={isDeleting}
+              sx={{ color: 'error.main' }}
+            >
+              {isDeleting ? (
+                <CircularProgress size={16} />
+              ) : (
+                <DeleteIcon />
+              )}
+            </IconButton>
+          </Stack>
         );
       },
     },
@@ -185,13 +271,9 @@ export default function AnnouncementsPage() {
                     paginationModel: { page: 0, pageSize: 10 },
                   },
                 }}
-                onRowClick={handleRowClick}
                 sx={{
                   '& .MuiDataGrid-row': {
-                    cursor: 'pointer',
-                  },
-                  '& .MuiDataGrid-row:hover': {
-                    backgroundColor: 'action.hover',
+                    cursor: 'default',
                   },
                 }}
               />
@@ -199,6 +281,18 @@ export default function AnnouncementsPage() {
           </>
         )}
       </Box>
+
+      <ConfirmationModal
+        open={deleteModalOpen}
+        onClose={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Announcement"
+        message="Are you sure you want to delete this announcement? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        isLoading={isDeleting}
+        severity="warning"
+      />
     </Box>
   );
 }

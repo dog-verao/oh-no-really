@@ -5,7 +5,13 @@ export interface Announcement {
   title: string;
   message: string;
   themeId?: string;
-  userId: string;
+  createdBy?: string;
+  buttons?: Array<{
+    label: string;
+    type: 'primary' | 'secondary';
+    behavior: 'close' | 'redirect';
+    redirectUrl?: string;
+  }>;
   draft: boolean;
   publishedAt?: string;
   createdAt: string;
@@ -16,6 +22,13 @@ export interface CreateAnnouncementData {
   title: string;
   content: string;
   themeId?: string;
+  createdBy?: string;
+  buttons?: Array<{
+    label: string;
+    type: 'primary' | 'secondary';
+    behavior: 'close' | 'redirect';
+    redirectUrl?: string;
+  }>;
 }
 
 export interface UpdateAnnouncementData {
@@ -23,15 +36,17 @@ export interface UpdateAnnouncementData {
   title: string;
   content: string;
   themeId?: string;
+  buttons?: Array<{
+    label: string;
+    type: 'primary' | 'secondary';
+    behavior: 'close' | 'redirect';
+    redirectUrl?: string;
+  }>;
 }
 
 
 const getAllByAccountId = async (accountId: string): Promise<Announcement[]> => {
-  const response = await fetch('/api/announcements', {
-    headers: {
-      'x-account-id': accountId,
-    },
-  });
+  const response = await fetch('/api/announcements');
 
   if (!response.ok) {
     throw new Error('Failed to fetch announcements');
@@ -41,11 +56,7 @@ const getAllByAccountId = async (accountId: string): Promise<Announcement[]> => 
 };
 
 const getAnnouncementById = async (announcementId: string, accountId: string): Promise<Announcement> => {
-  const response = await fetch(`/api/announcements/${announcementId}`, {
-    headers: {
-      'x-account-id': accountId,
-    },
-  });
+  const response = await fetch(`/api/announcements/${announcementId}`);
 
   if (!response.ok) {
     throw new Error('Failed to fetch announcement');
@@ -60,7 +71,6 @@ const createAnnouncement = async (data: CreateAnnouncementData, accountId: strin
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'x-account-id': accountId,
     },
     body: JSON.stringify(data),
   });
@@ -77,7 +87,6 @@ const updateAnnouncement = async (data: UpdateAnnouncementData, accountId: strin
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
-      'x-account-id': accountId,
     },
     body: JSON.stringify(data),
   });
@@ -87,6 +96,16 @@ const updateAnnouncement = async (data: UpdateAnnouncementData, accountId: strin
   }
 
   return response.json();
+};
+
+const deleteAnnouncement = async (announcementId: string, accountId: string): Promise<void> => {
+  const response = await fetch(`/api/announcements/${announcementId}`, {
+    method: 'DELETE',
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to delete announcement');
+  }
 };
 
 // Custom hook for announcements
@@ -130,6 +149,13 @@ export const useAnnouncements = (accountId: string) => {
     },
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: (announcementId: string) => deleteAnnouncement(announcementId, accountId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['announcements', accountId] });
+    },
+  });
+
   return {
     // Query data
     announcements: announcements || [],
@@ -151,5 +177,11 @@ export const useAnnouncements = (accountId: string) => {
     updateAnnouncementAsync: updateMutation.mutateAsync,
     isUpdating: updateMutation.isPending,
     updateError: updateMutation.error,
+
+    // Delete functions
+    deleteAnnouncement: deleteMutation.mutate,
+    deleteAnnouncementAsync: deleteMutation.mutateAsync,
+    isDeleting: deleteMutation.isPending,
+    deleteError: deleteMutation.error,
   };
 };

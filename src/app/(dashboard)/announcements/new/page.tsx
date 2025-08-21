@@ -16,12 +16,17 @@ export default function CreateAnnouncementPage() {
   const handleSubmit = async (data: {
     title: string;
     content: string;
-    type: 'modal' | 'banner' | 'tooltip';
-    pagePattern: string;
+    buttons: Array<{
+      label: string;
+      type: 'primary' | 'secondary';
+      behavior: 'close' | 'redirect';
+      redirectUrl?: string;
+    }>;
   }) => {
     await createAnnouncementAsync({
       title: data.title,
       content: data.content,
+      buttons: data.buttons,
       // You can add themeId here if you have theme selection
     });
   };

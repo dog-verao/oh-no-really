@@ -4,7 +4,6 @@ import {
   Box,
   Button,
   FormControl,
-  InputLabel,
   MenuItem,
   Select,
   Stack,
@@ -18,27 +17,34 @@ import {
   Visibility as PreviewIcon,
   Send as PublishIcon,
   Save as SaveIcon,
-  Add as AddIcon,
   ArrowBack as BackIcon,
 } from '@mui/icons-material';
 import { TiptapEditor } from './TiptapEditor';
 import { useState, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { useDebounce } from '@/hooks/useDebounce';
+import { useDebounce } from '../../hooks/useDebounce';
 
 interface AnnouncementFormProps {
   mode: 'create' | 'edit';
   initialData?: {
     title: string;
     body: string;
-    type?: 'modal' | 'banner' | 'tooltip';
-    pagePattern?: string;
+    buttons?: Array<{
+      label: string;
+      type: 'primary' | 'secondary';
+      behavior: 'close' | 'redirect';
+      redirectUrl?: string;
+    }>;
   };
   onSubmit: (data: {
     title: string;
     content: string;
-    type: 'modal' | 'banner' | 'tooltip';
-    pagePattern: string;
+    buttons: Array<{
+      label: string;
+      type: 'primary' | 'secondary';
+      behavior: 'close' | 'redirect';
+      redirectUrl?: string;
+    }>;
   }) => Promise<void>;
   onCancel?: () => void;
   isSubmitting: boolean;
@@ -58,19 +64,22 @@ export function AnnouncementForm({
   const router = useRouter();
   const [showSuccess, setShowSuccess] = useState(false);
 
-  const [type, setType] = useState<'modal' | 'banner' | 'tooltip'>(
-    initialData?.type || 'modal'
-  );
-  const [pagePattern, setPagePattern] = useState(initialData?.pagePattern || '/dashboard/*');
   const [content, setContent] = useState({
     title: initialData?.title || '',
     body: initialData?.body || '',
   });
-  const [buttons, setButtons] = useState<Array<{ label: string; type: 'primary' | 'secondary' }>>([
-    { label: 'Got it', type: 'primary' }
-  ]);
+  const [buttons, setButtons] = useState<Array<{
+    label: string;
+    type: 'primary' | 'secondary';
+    behavior: 'close' | 'redirect';
+    redirectUrl?: string;
+  }>>(
+    initialData?.buttons || [{ label: 'Got it', type: 'primary', behavior: 'close' }]
+  );
   const [newButtonLabel, setNewButtonLabel] = useState('');
   const [newButtonType, setNewButtonType] = useState<'primary' | 'secondary'>('secondary');
+  const [newButtonBehavior, setNewButtonBehavior] = useState<'close' | 'redirect'>('close');
+  const [newButtonRedirectUrl, setNewButtonRedirectUrl] = useState('');
 
   // Debounced content to prevent excessive re-renders
   const debouncedContent = useDebounce(content, 300);
@@ -84,8 +93,7 @@ export function AnnouncementForm({
       await onSubmit({
         title: content.title,
         content: content.body,
-        type,
-        pagePattern,
+        buttons,
       });
 
       if (mode === 'create') {
@@ -98,7 +106,7 @@ export function AnnouncementForm({
     } catch (error) {
       console.error('Failed to submit announcement:', error);
     }
-  }, [content, type, pagePattern, onSubmit, mode]);
+  }, [content, onSubmit, mode]);
 
   const handleCancel = useCallback(() => {
     if (onCancel) {
@@ -113,11 +121,11 @@ export function AnnouncementForm({
   }, [content.title, content.body]);
 
   const title = mode === 'create' ? 'Create Announcement' : 'Update Announcement';
-  const subtitle = mode === 'create' 
-    ? 'Set up your user announcement flow.' 
+  const subtitle = mode === 'create'
+    ? 'Set up your user announcement flow.'
     : 'Update your announcement settings.';
-  const submitButtonText = isSubmitting 
-    ? (mode === 'create' ? 'Publishing...' : 'Saving...') 
+  const submitButtonText = isSubmitting
+    ? (mode === 'create' ? 'Publishing...' : 'Saving...')
     : (mode === 'create' ? 'Publish' : 'Save Changes');
   const submitIcon = mode === 'create' ? <PublishIcon /> : <SaveIcon />;
 
@@ -125,30 +133,6 @@ export function AnnouncementForm({
     <Box sx={{ p: 4, pl: 6, maxWidth: 800 }}>
       <Box sx={{ mt: 4 }}>
         <Stack spacing={4}>
-          <FormControl fullWidth>
-            <InputLabel id="type-label">Type</InputLabel>
-            <Select
-              onChange={(e) => setType(e.target.value as 'modal' | 'banner' | 'tooltip')}
-              labelId="type-label"
-              id="type-select"
-              value={type}
-              label="Type"
-            >
-              <MenuItem value="modal">Modal</MenuItem>
-              <MenuItem value="banner">Banner</MenuItem>
-              <MenuItem value="tooltip">Tooltip</MenuItem>
-            </Select>
-          </FormControl>
-
-          {/* Page Pattern Field */}
-          <TextField
-            fullWidth
-            label="Page Pattern"
-            value={pagePattern}
-            onChange={(e) => setPagePattern(e.target.value)}
-            helperText="Specify which pages this announcement should appear on."
-          />
-
           {/* Content Fields */}
           <Stack spacing={2}>
             <Typography variant="subtitle2" sx={{ fontWeight: 500 }}>
@@ -201,6 +185,37 @@ export function AnnouncementForm({
                     <MenuItem value="secondary">Secondary</MenuItem>
                   </Select>
                 </FormControl>
+                <FormControl size="small" sx={{ minWidth: 120 }}>
+                  <Select
+                    value={button.behavior}
+                    onChange={(e) => {
+                      const newButtons = [...buttons];
+                      newButtons[index] = {
+                        ...newButtons[index],
+                        behavior: e.target.value as 'close' | 'redirect',
+                        redirectUrl: e.target.value === 'redirect' ? newButtons[index].redirectUrl : undefined
+                      };
+                      setButtons(newButtons);
+                    }}
+                    size="small"
+                  >
+                    <MenuItem value="close">Close Modal</MenuItem>
+                    <MenuItem value="redirect">Redirect</MenuItem>
+                  </Select>
+                </FormControl>
+                {button.behavior === 'redirect' && (
+                  <TextField
+                    size="small"
+                    placeholder="Redirect URL"
+                    value={button.redirectUrl || ''}
+                    onChange={(e) => {
+                      const newButtons = [...buttons];
+                      newButtons[index] = { ...newButtons[index], redirectUrl: e.target.value };
+                      setButtons(newButtons);
+                    }}
+                    sx={{ minWidth: 200 }}
+                  />
+                )}
                 {buttons.length > 1 && (
                   <Button
                     size="small"
@@ -234,16 +249,42 @@ export function AnnouncementForm({
                   <MenuItem value="secondary">Secondary</MenuItem>
                 </Select>
               </FormControl>
+              <FormControl size="small" sx={{ minWidth: 120 }}>
+                <Select
+                  value={newButtonBehavior}
+                  onChange={(e) => setNewButtonBehavior(e.target.value as 'close' | 'redirect')}
+                  size="small"
+                >
+                  <MenuItem value="close">Close Modal</MenuItem>
+                  <MenuItem value="redirect">Redirect</MenuItem>
+                </Select>
+              </FormControl>
+              {newButtonBehavior === 'redirect' && (
+                <TextField
+                  size="small"
+                  placeholder="Redirect URL"
+                  value={newButtonRedirectUrl}
+                  onChange={(e) => setNewButtonRedirectUrl(e.target.value)}
+                  sx={{ minWidth: 200 }}
+                />
+              )}
               <Button
                 variant="outlined"
                 size="small"
                 onClick={() => {
                   if (newButtonLabel.trim()) {
-                    setButtons([...buttons, { label: newButtonLabel.trim(), type: newButtonType }]);
+                    const newButton = {
+                      label: newButtonLabel.trim(),
+                      type: newButtonType,
+                      behavior: newButtonBehavior,
+                      ...(newButtonBehavior === 'redirect' && { redirectUrl: newButtonRedirectUrl })
+                    };
+                    setButtons([...buttons, newButton]);
                     setNewButtonLabel('');
+                    setNewButtonRedirectUrl('');
                   }
                 }}
-                disabled={!newButtonLabel.trim()}
+                disabled={!newButtonLabel.trim() || (newButtonBehavior === 'redirect' && !newButtonRedirectUrl.trim())}
               >
                 Add
               </Button>
