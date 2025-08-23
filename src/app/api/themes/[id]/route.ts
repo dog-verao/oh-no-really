@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { createServerSupabaseClient } from "@/lib/supabase-server";
 
 export async function GET(
   req: NextRequest,
@@ -8,14 +9,35 @@ export async function GET(
   try {
     const { id: themeId } = await params;
 
-    // TODO: Get account ID from authenticated user session
-    // For now, we'll use a hardcoded account ID until we implement proper auth
-    const accountId = 'account_1'; // This should come from the authenticated user's session
+    // Get the authenticated user and their account
+    const supabase = await createServerSupabaseClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    // Get the user's account
+    const accountUser = await prisma.accountUser.findFirst({
+      where: {
+        userId: user.id,
+      },
+    });
+
+    if (!accountUser) {
+      return NextResponse.json(
+        { error: 'No account found for user' },
+        { status: 404 }
+      );
+    }
 
     const theme = await prisma.theme.findFirst({
       where: {
         id: themeId,
-        accountId: accountId, // Ensure user can only access their own themes
+        accountId: accountUser.accountId, // Ensure user can only access their own themes
       },
     });
 
@@ -44,15 +66,36 @@ export async function PUT(
     const { id: themeId } = await params;
     const body = await req.json();
 
-    // TODO: Get account ID from authenticated user session
-    // For now, we'll use a hardcoded account ID until we implement proper auth
-    const accountId = 'account_1'; // This should come from the authenticated user's session
+    // Get the authenticated user and their account
+    const supabase = await createServerSupabaseClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    // Get the user's account
+    const accountUser = await prisma.accountUser.findFirst({
+      where: {
+        userId: user.id,
+      },
+    });
+
+    if (!accountUser) {
+      return NextResponse.json(
+        { error: 'No account found for user' },
+        { status: 404 }
+      );
+    }
 
     // First verify the theme belongs to this account
     const existingTheme = await prisma.theme.findFirst({
       where: {
         id: themeId,
-        accountId: accountId,
+        accountId: accountUser.accountId,
       },
     });
 
@@ -91,15 +134,36 @@ export async function DELETE(
   try {
     const { id: themeId } = await params;
 
-    // TODO: Get account ID from authenticated user session
-    // For now, we'll use a hardcoded account ID until we implement proper auth
-    const accountId = 'account_1'; // This should come from the authenticated user's session
+    // Get the authenticated user and their account
+    const supabase = await createServerSupabaseClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    // Get the user's account
+    const accountUser = await prisma.accountUser.findFirst({
+      where: {
+        userId: user.id,
+      },
+    });
+
+    if (!accountUser) {
+      return NextResponse.json(
+        { error: 'No account found for user' },
+        { status: 404 }
+      );
+    }
 
     // First verify the theme belongs to this account
     const existingTheme = await prisma.theme.findFirst({
       where: {
         id: themeId,
-        accountId: accountId,
+        accountId: accountUser.accountId,
       },
     });
 
