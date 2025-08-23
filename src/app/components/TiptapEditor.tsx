@@ -8,6 +8,8 @@ import TaskList from '@tiptap/extension-task-list';
 import TaskItem from '@tiptap/extension-task-item';
 import TextAlign from '@tiptap/extension-text-align';
 import ResizeImage from 'tiptap-extension-resize-image';
+import YouTube from '@tiptap/extension-youtube';
+
 import { Box, Paper, ToggleButton, ToggleButtonGroup, Divider, IconButton, Tooltip } from '@mui/material';
 import {
   FormatBold,
@@ -22,8 +24,10 @@ import {
   FormatAlignCenter,
   FormatAlignRight,
   Image as ImageIcon,
+  VideoLibrary,
 } from '@mui/icons-material';
 import { ImageUploadModal } from './ImageUploadModal';
+import { VideoUploadModal } from './VideoUploadModal';
 import './TiptapEditor.css';
 import { useState } from 'react';
 
@@ -43,6 +47,7 @@ export const TiptapEditor = ({
   maxHeight
 }: TiptapEditorProps) => {
   const [imageModalOpen, setImageModalOpen] = useState(false);
+  const [videoModalOpen, setVideoModalOpen] = useState(false);
 
   const editor = useEditor({
     extensions: [
@@ -55,6 +60,14 @@ export const TiptapEditor = ({
           class: 'editor-image',
         },
       }),
+      YouTube.configure({
+        controls: false,
+        nocookie: true,
+        HTMLAttributes: {
+          class: 'editor-video',
+        },
+      }),
+
       TaskList,
       TaskItem.configure({
         nested: true,
@@ -73,6 +86,10 @@ export const TiptapEditor = ({
         class: 'prose prose-sm focus:outline-none',
       },
     },
+    parseOptions: {
+      preserveWhitespace: 'full',
+    },
+    enableCoreExtensions: true,
     immediatelyRender: false,
   });
 
@@ -92,6 +109,15 @@ export const TiptapEditor = ({
 
   const handleImageUpload = (url: string) => {
     editor.chain().focus().setImage({ src: url }).run();
+  };
+
+  const handleVideoUpload = (videoUrl: string) => {
+    // Follow the example exactly - pass the original YouTube URL
+    editor.commands.setYoutubeVideo({
+      src: videoUrl,
+      width: 560,
+      height: 315,
+    });
   };
 
   return (
@@ -264,6 +290,15 @@ export const TiptapEditor = ({
             <ImageIcon fontSize="small" />
           </IconButton>
         </Tooltip>
+        <Tooltip title="Add Video">
+          <IconButton
+            size="small"
+            onClick={() => setVideoModalOpen(true)}
+            sx={{ px: 1 }}
+          >
+            <VideoLibrary fontSize="small" />
+          </IconButton>
+        </Tooltip>
       </Box>
 
       {/* Editor Content */}
@@ -285,6 +320,11 @@ export const TiptapEditor = ({
         open={imageModalOpen}
         onClose={() => setImageModalOpen(false)}
         onUpload={handleImageUpload}
+      />
+      <VideoUploadModal
+        open={videoModalOpen}
+        onClose={() => setVideoModalOpen(false)}
+        onVideoAdd={handleVideoUpload}
       />
     </Paper>
   );
