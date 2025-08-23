@@ -238,12 +238,12 @@ export function ThemeForm({
                   variant="outlined"
                   size="small"
                   sx={{
-                    borderColor: themeConfig.button.backgroundColor,
-                    color: themeConfig.button.backgroundColor,
-                    borderRadius: themeConfig.button.borderRadius,
+                    borderColor: themeConfig.secondaryButton.borderColor,
+                    color: themeConfig.secondaryButton.textColor,
+                    borderRadius: themeConfig.secondaryButton.borderRadius,
                     '&:hover': {
-                      borderColor: themeConfig.button.backgroundColor,
-                      backgroundColor: `${themeConfig.button.backgroundColor}10`,
+                      borderColor: themeConfig.secondaryButton.borderColor,
+                      backgroundColor: `${themeConfig.secondaryButton.borderColor}10`,
                     },
                   }}
                 >

@@ -4,18 +4,19 @@ import { Box } from '@mui/material';
 import { Header } from '../../../components/Header';
 import { ThemeForm } from '../../../components/ThemeForm';
 import { useThemeQueries } from '@/hooks/useThemeQueries';
+import { useCurrentAccount } from '@/hooks/useCurrentAccount';
 import { useRouter } from 'next/navigation';
 import { CreateThemeData } from '@/hooks/useThemeQueries';
 
 export default function NewThemePage() {
   const router = useRouter();
-  const accountId = 'account_1';
+  const { account } = useCurrentAccount();
 
   const {
     createThemeAsync,
     isCreating,
     createError,
-  } = useThemeQueries(accountId);
+  } = useThemeQueries(account?.id || '');
 
   const handleSubmit = async (data: CreateThemeData) => {
     try {

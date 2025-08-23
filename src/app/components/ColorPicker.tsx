@@ -18,21 +18,23 @@ export const ColorPicker = ({ label, value, onChange, size = 'small' }: ColorPic
   }, [value]);
 
   const handleColorChange = (color: string) => {
-    onChange(color);
     setTextValue(color);
   };
 
   const handleTextChange = (text: string) => {
     setTextValue(text);
-    // Only update if it's a valid hex color
-    if (/^#[0-9A-F]{6}$/i.test(text)) {
-      onChange(text);
-    }
+  };
+
+  const handleColorBlur = () => {
+    onChange(textValue);
   };
 
   const handleTextBlur = () => {
-    // Reset to current value if invalid
-    if (!/^#[0-9A-F]{6}$/i.test(textValue)) {
+    // Only update if it's a valid hex color
+    if (/^#[0-9A-F]{6}$/i.test(textValue)) {
+      onChange(textValue);
+    } else {
+      // Reset to current value if invalid
       setTextValue(value);
     }
   };
@@ -55,6 +57,7 @@ export const ColorPicker = ({ label, value, onChange, size = 'small' }: ColorPic
           type="color"
           value={value}
           onChange={(e) => handleColorChange(e.target.value)}
+          onBlur={handleColorBlur}
           style={{
             position: 'absolute',
             top: 0,

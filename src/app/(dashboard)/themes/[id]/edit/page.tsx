@@ -4,6 +4,7 @@ import { Box, Typography, Alert } from '@mui/material';
 import { Header } from '../../../../components/Header';
 import { ThemeForm } from '../../../../components/ThemeForm';
 import { useThemeQueries } from '@/hooks/useThemeQueries';
+import { useCurrentAccount } from '@/hooks/useCurrentAccount';
 import { useRouter, useParams } from 'next/navigation';
 import { UpdateThemeData, CreateThemeData, Theme } from '@/hooks/useThemeQueries';
 import { useEffect, useState } from 'react';
@@ -12,7 +13,7 @@ export default function EditThemePage() {
   const router = useRouter();
   const params = useParams();
   const themeId = params.id as string;
-  const accountId = 'account_1';
+  const { account } = useCurrentAccount();
   const [theme, setTheme] = useState<Theme | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -22,7 +23,7 @@ export default function EditThemePage() {
     updateThemeAsync,
     isUpdating,
     updateError,
-  } = useThemeQueries(accountId);
+  } = useThemeQueries(account?.id || '');
 
   useEffect(() => {
     const loadTheme = async () => {
