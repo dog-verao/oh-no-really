@@ -3,7 +3,12 @@
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
-import { Box, Paper, ToggleButton, ToggleButtonGroup, Divider } from '@mui/material';
+import Image from '@tiptap/extension-image';
+import TaskList from '@tiptap/extension-task-list';
+import TaskItem from '@tiptap/extension-task-item';
+import TextAlign from '@tiptap/extension-text-align';
+import ResizeImage from 'tiptap-extension-resize-image';
+import { Box, Paper, ToggleButton, ToggleButtonGroup, Divider, IconButton, Tooltip } from '@mui/material';
 import {
   FormatBold,
   FormatItalic,
@@ -12,28 +17,52 @@ import {
   FormatQuote,
   Code,
   Title,
+  CheckBox,
+  FormatAlignLeft,
+  FormatAlignCenter,
+  FormatAlignRight,
+  Image as ImageIcon,
 } from '@mui/icons-material';
+import { ImageUploadModal } from './ImageUploadModal';
 import './TiptapEditor.css';
+import { useState } from 'react';
 
 interface TiptapEditorProps {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
   minHeight?: number;
+  maxHeight?: number;
 }
 
 export const TiptapEditor = ({
   value,
   onChange,
   placeholder = 'Start writing...',
-  minHeight = 120
+  minHeight = 120,
+  maxHeight
 }: TiptapEditorProps) => {
+  const [imageModalOpen, setImageModalOpen] = useState(false);
+
   const editor = useEditor({
     extensions: [
       StarterKit,
       Placeholder.configure({
         placeholder,
       }),
+      ResizeImage.configure({
+        HTMLAttributes: {
+          class: 'editor-image',
+        },
+      }),
+      TaskList,
+      TaskItem.configure({
+        nested: true,
+      }),
+      TextAlign.configure({
+        types: ['heading', 'paragraph'],
+      }),
+
     ],
     content: value,
     onUpdate: ({ editor }) => {
@@ -55,9 +84,15 @@ export const TiptapEditor = ({
   const toggleItalic = () => editor.chain().focus().toggleItalic().run();
   const toggleBulletList = () => editor.chain().focus().toggleBulletList().run();
   const toggleOrderedList = () => editor.chain().focus().toggleOrderedList().run();
+  const toggleTaskList = () => editor.chain().focus().toggleTaskList().run();
   const toggleBlockquote = () => editor.chain().focus().toggleBlockquote().run();
   const toggleCode = () => editor.chain().focus().toggleCode().run();
   const setHeading = (level: 1 | 2 | 3) => editor.chain().focus().toggleHeading({ level }).run();
+  const setTextAlign = (align: 'left' | 'center' | 'right') => editor.chain().focus().setTextAlign(align).run();
+
+  const handleImageUpload = (url: string) => {
+    editor.chain().focus().setImage({ src: url }).run();
+  };
 
   return (
     <Paper
@@ -85,6 +120,7 @@ export const TiptapEditor = ({
         gap: 0.5,
         flexWrap: 'wrap'
       }}>
+        {/* Text Formatting */}
         <ToggleButtonGroup size="small" sx={{ '& .MuiToggleButton-root': { px: 1 } }}>
           <ToggleButton
             value="bold"
@@ -106,6 +142,7 @@ export const TiptapEditor = ({
 
         <Divider orientation="vertical" flexItem />
 
+        {/* Headings */}
         <ToggleButtonGroup size="small" sx={{ '& .MuiToggleButton-root': { px: 1 } }}>
           <ToggleButton
             value="h1"
@@ -135,6 +172,7 @@ export const TiptapEditor = ({
 
         <Divider orientation="vertical" flexItem />
 
+        {/* Lists */}
         <ToggleButtonGroup size="small" sx={{ '& .MuiToggleButton-root': { px: 1 } }}>
           <ToggleButton
             value="bulletList"
@@ -152,10 +190,49 @@ export const TiptapEditor = ({
           >
             <FormatListNumbered fontSize="small" />
           </ToggleButton>
+          <ToggleButton
+            value="taskList"
+            selected={editor.isActive('taskList')}
+            onClick={toggleTaskList}
+            size="small"
+          >
+            <CheckBox fontSize="small" />
+          </ToggleButton>
         </ToggleButtonGroup>
 
         <Divider orientation="vertical" flexItem />
 
+        {/* Text Alignment */}
+        <ToggleButtonGroup size="small" sx={{ '& .MuiToggleButton-root': { px: 1 } }}>
+          <ToggleButton
+            value="left"
+            selected={editor.isActive({ textAlign: 'left' })}
+            onClick={() => setTextAlign('left')}
+            size="small"
+          >
+            <FormatAlignLeft fontSize="small" />
+          </ToggleButton>
+          <ToggleButton
+            value="center"
+            selected={editor.isActive({ textAlign: 'center' })}
+            onClick={() => setTextAlign('center')}
+            size="small"
+          >
+            <FormatAlignCenter fontSize="small" />
+          </ToggleButton>
+          <ToggleButton
+            value="right"
+            selected={editor.isActive({ textAlign: 'right' })}
+            onClick={() => setTextAlign('right')}
+            size="small"
+          >
+            <FormatAlignRight fontSize="small" />
+          </ToggleButton>
+        </ToggleButtonGroup>
+
+        <Divider orientation="vertical" flexItem />
+
+        {/* Other Formatting */}
         <ToggleButtonGroup size="small" sx={{ '& .MuiToggleButton-root': { px: 1 } }}>
           <ToggleButton
             value="blockquote"
@@ -174,10 +251,27 @@ export const TiptapEditor = ({
             <Code fontSize="small" />
           </ToggleButton>
         </ToggleButtonGroup>
+
+        <Divider orientation="vertical" flexItem />
+
+        {/* Media */}
+        <Tooltip title="Add Image">
+          <IconButton
+            size="small"
+            onClick={() => setImageModalOpen(true)}
+            sx={{ px: 1 }}
+          >
+            <ImageIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
       </Box>
 
       {/* Editor Content */}
-      <Box sx={{ p: 2 }}>
+      <Box sx={{
+        p: 2,
+        maxHeight: maxHeight ? maxHeight - 80 : 'none',
+        overflowY: maxHeight ? 'auto' : 'visible'
+      }}>
         <EditorContent
           editor={editor}
           style={{
@@ -186,6 +280,12 @@ export const TiptapEditor = ({
           }}
         />
       </Box>
+
+      <ImageUploadModal
+        open={imageModalOpen}
+        onClose={() => setImageModalOpen(false)}
+        onUpload={handleImageUpload}
+      />
     </Paper>
   );
 };

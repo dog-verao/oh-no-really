@@ -145,7 +145,8 @@ export function AnnouncementForm({
               value={formData.content}
               onChange={(value) => updateFormData({ content: value })}
               placeholder="Write your announcement content here..."
-              minHeight={160}
+              minHeight={200}
+              maxHeight={600}
             />
           </Stack>
 
