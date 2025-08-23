@@ -17,6 +17,7 @@ import Image from 'next/image';
 import { DataGrid, GridColDef, GridRowParams } from '@mui/x-data-grid';
 import { Header } from '../../components/Header';
 import { useAnnouncements } from '@/hooks/useAnnouncements';
+import { useCurrentAccount } from '@/hooks/useCurrentAccount';
 import { useRouter } from 'next/navigation';
 import dayjs from 'dayjs';
 import { useState } from 'react';
@@ -24,7 +25,7 @@ import { ConfirmationModal } from '../../components/ConfirmationModal';
 
 export default function AnnouncementsPage() {
   const router = useRouter();
-  const accountId = 'account_1';
+  const { account, isLoading: isLoadingAccount } = useCurrentAccount();
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [announcementToDelete, setAnnouncementToDelete] = useState<string | null>(null);
   const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
@@ -32,11 +33,13 @@ export default function AnnouncementsPage() {
 
   const {
     announcements,
-    isLoading,
+    isLoading: isLoadingAnnouncements,
     error,
     deleteAnnouncement,
     isDeleting,
-  } = useAnnouncements(accountId);
+  } = useAnnouncements(account?.id || '');
+
+  const isLoading = isLoadingAccount || isLoadingAnnouncements;
 
   const handleRowClick = (params: GridRowParams) => {
     router.push(`/announcements/${params.row.id}`);

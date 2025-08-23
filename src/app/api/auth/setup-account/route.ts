@@ -18,21 +18,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Create or find the user record
-    let userRecord = await prisma.user.findUnique({
-      where: { id: userId },
-    });
-
-    if (!userRecord) {
-      userRecord = await prisma.user.create({
-        data: {
-          id: userId,
-          email,
-          name,
-        },
-      });
-    }
-
     // Create the account
     const account = await prisma.account.create({
       data: {
@@ -45,7 +30,7 @@ export async function POST(req: NextRequest) {
     await prisma.accountUser.create({
       data: {
         accountId: account.id,
-        userId: userRecord.id,
+        userId: userId, // Use Supabase user ID directly
         role: 'owner',
       },
     });
@@ -58,9 +43,9 @@ export async function POST(req: NextRequest) {
         apiKey: account.apiKey,
       },
       user: {
-        id: userRecord.id,
-        email: userRecord.email,
-        name: userRecord.name,
+        id: userId,
+        email,
+        name,
       },
     });
   } catch (error) {

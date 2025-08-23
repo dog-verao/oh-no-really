@@ -16,6 +16,7 @@ import Image from 'next/image';
 import { DataGrid, GridColDef, GridRowParams } from '@mui/x-data-grid';
 import { Header } from '../../components/Header';
 import { useThemeQueries } from '@/hooks/useThemeQueries';
+import { useCurrentAccount } from '@/hooks/useCurrentAccount';
 import { useRouter } from 'next/navigation';
 import dayjs from 'dayjs';
 import { useState } from 'react';
@@ -23,7 +24,7 @@ import { ConfirmationModal } from '../../components/ConfirmationModal';
 
 export default function ThemesPage() {
   const router = useRouter();
-  const accountId = 'account_1';
+  const { account, isLoading: isLoadingAccount } = useCurrentAccount();
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [themeToDelete, setThemeToDelete] = useState<string | null>(null);
   const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
@@ -31,11 +32,13 @@ export default function ThemesPage() {
 
   const {
     themes,
-    isLoading,
+    isLoading: isLoadingThemes,
     error,
     deleteTheme,
     isDeleting,
-  } = useThemeQueries(accountId);
+  } = useThemeQueries(account?.id || '');
+
+  const isLoading = isLoadingAccount || isLoadingThemes;
 
   const handleCreateNew = () => {
     router.push('/themes/new');
