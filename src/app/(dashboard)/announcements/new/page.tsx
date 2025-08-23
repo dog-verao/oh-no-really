@@ -40,7 +40,7 @@ function CreateAnnouncementContent() {
               }
             },
             isSubmitting: isCreating,
-            submitText: 'Publish',
+            submitText: 'Save',
           }}
         />
         <AnnouncementForm

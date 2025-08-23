@@ -70,7 +70,7 @@ export interface UpdateThemeData {
   };
 }
 
-const getAllByAccountId = async (accountId: string): Promise<Theme[]> => {
+const getAllByAccountId = async (): Promise<Theme[]> => {
   const response = await fetch('/api/themes');
 
   if (!response.ok) {
@@ -144,7 +144,7 @@ export const useThemeQueries = (accountId: string) => {
     refetch,
   } = useQuery({
     queryKey: ['themes', accountId],
-    queryFn: () => getAllByAccountId(accountId),
+    queryFn: () => getAllByAccountId(),
     enabled: !!accountId,
   });
 

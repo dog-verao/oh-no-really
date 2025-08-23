@@ -12,7 +12,7 @@ export default function Home() {
   useEffect(() => {
     if (!loading) {
       if (user) {
-        router.push('/dashboard/announcements')
+        router.push('/announcements')
       } else {
         router.push('/auth/signin')
       }
