@@ -138,14 +138,8 @@ export default function ThemesPage() {
 
   if (isLoading) {
     return (
-      <Box sx={{ p: 4, pl: 6 }}>
-        <Header
-          title="Themes"
-          subtitle="Manage your custom themes."
-        />
-        <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
-          <Typography>Loading themes...</Typography>
-        </Box>
+      <Box sx={{ p: 4, pl: 6, display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 400 }}>
+        <CircularProgress size={58} />
       </Box>
     );
   }
@@ -153,29 +147,36 @@ export default function ThemesPage() {
   if (error) {
     return (
       <Box sx={{ p: 4, pl: 6 }}>
-        <Header
-          title="Themes"
-          subtitle="Manage your custom themes."
-        />
-        <Box sx={{ mt: 4 }}>
-          <Typography color="error">
-            Error loading themes: {error.message}
-          </Typography>
-        </Box>
+        <Typography color="error">
+          Error loading themes: {error.message}
+        </Typography>
       </Box>
     );
   }
 
   return (
     <Box sx={{ p: 4, pl: 6 }}>
-      <Header
-        title="Themes"
-        subtitle="Manage your custom themes."
-      />
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 4 }}>
+        <Box>
+          <Typography variant="h4" sx={{ fontWeight: 600, mb: 1 }}>
+            Themes
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            Manage your custom themes.
+          </Typography>
+        </Box>
+        <Button
+          variant="contained"
+          startIcon={<Image src="/illustrations/Notion-Icons/Regular/svg/ni-plus.svg" alt="Add" width={20} height={20} />}
+          onClick={handleCreateNew}
+        >
+          Create Theme
+        </Button>
+      </Box>
 
-      <Box sx={{ mt: 4 }}>
+      <Box>
         {themes.length === 0 ? (
-          <Paper
+          <Box
             sx={{
               p: 6,
               textAlign: 'center',
@@ -183,6 +184,8 @@ export default function ThemesPage() {
               flexDirection: 'column',
               alignItems: 'center',
               gap: 2,
+              backgroundColor: 'background.paper',
+              borderRadius: 2,
             }}
           >
             <Typography variant="h6" color="text.secondary">
@@ -193,42 +196,40 @@ export default function ThemesPage() {
             </Typography>
             <Button
               variant="contained"
-              startIcon={<Image src="/illustrations/Notion-Icons/Regular/svg/ni-plus.svg" alt="Add" width={20} height={20} />}
+              startIcon={<Image src="/illustrations/Notion-Icons/Regular/svg/ni-plus.svg" alt="Add" width={20} height={20} style={{ filter: 'brightness(0) invert(1)' }} />}
               onClick={handleCreateNew}
             >
               Create Theme
             </Button>
-          </Paper>
+          </Box>
         ) : (
-          <>
-            <Box sx={{ mb: 2, display: 'flex', justifyContent: 'flex-end' }}>
-              <Button
-                variant="contained"
-                startIcon={<Image src="/illustrations/Notion-Icons/Regular/svg/ni-plus.svg" alt="Add" width={20} height={20} />}
-                onClick={handleCreateNew}
-              >
-                Create Theme
-              </Button>
-            </Box>
-            <Paper sx={{ height: 600, width: '100%' }}>
-              <DataGrid
-                rows={themes}
-                columns={columns}
-                getRowId={(row) => row.id}
-                pageSizeOptions={[10, 25, 50]}
-                initialState={{
-                  pagination: {
-                    paginationModel: { page: 0, pageSize: 10 },
-                  },
-                }}
-                sx={{
-                  '& .MuiDataGrid-row': {
-                    cursor: 'default',
-                  },
-                }}
-              />
-            </Paper>
-          </>
+          <Box sx={{ height: 600, width: '100%', backgroundColor: 'background.paper', borderRadius: 2 }}>
+            <DataGrid
+              rows={themes}
+              columns={columns}
+              getRowId={(row) => row.id}
+              pageSizeOptions={[10, 25, 50]}
+              initialState={{
+                pagination: {
+                  paginationModel: { page: 0, pageSize: 10 },
+                },
+              }}
+              sx={{
+                '& .MuiDataGrid-row': {
+                  cursor: 'default',
+                },
+                border: 'none',
+                '& .MuiDataGrid-cell': {
+                  borderBottom: '1px solid',
+                  borderColor: 'divider',
+                },
+                '& .MuiDataGrid-columnHeaders': {
+                  borderBottom: '1px solid',
+                  borderColor: 'divider',
+                },
+              }}
+            />
+          </Box>
         )}
       </Box>
 

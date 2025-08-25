@@ -44,7 +44,7 @@ function AnnouncementDetailContent() {
   if (isLoading) {
     return (
       <Box sx={{ p: 4, pl: 6, display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 400 }}>
-        <CircularProgress />
+        <CircularProgress size={58} />
       </Box>
     );
   }

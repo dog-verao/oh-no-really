@@ -40,7 +40,7 @@ export default function Home() {
       >
         Notifications.fyi
       </Typography>
-      <CircularProgress size={24} />
+      <CircularProgress size={58} />
     </Box>
   )
 }

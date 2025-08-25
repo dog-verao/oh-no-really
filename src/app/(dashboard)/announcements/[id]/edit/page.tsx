@@ -1,6 +1,6 @@
 'use client';
 
-import { Box, Typography, Alert } from '@mui/material';
+import { Box, Typography, Alert, CircularProgress } from '@mui/material';
 import { Header } from '../../../../components/Header';
 import { AnnouncementForm } from '../../../../components/AnnouncementForm';
 import { AnnouncementPreview } from '../../../../components/AnnouncementPreview';
@@ -38,7 +38,7 @@ function EditAnnouncementContent() {
           subtitle="Update announcement configuration."
         />
         <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
-          <Typography>Loading announcement...</Typography>
+          <CircularProgress size={58} />
         </Box>
       </Box>
     );

@@ -20,8 +20,8 @@ import Image from 'next/image';
 interface SidebarProps {
   open: boolean;
   onClose?: () => void;
-  activeItem?: 'announcements' | 'themes';
-  onItemClick?: (item: 'announcements' | 'themes') => void;
+  activeItem?: 'announcements' | 'themes' | 'settings';
+  onItemClick?: (item: 'announcements' | 'themes' | 'settings') => void;
   collapsed?: boolean;
   onToggleCollapse?: () => void;
 }
@@ -48,9 +48,14 @@ export const Sidebar = ({
       label: 'Themes',
       icon: <Image src="/illustrations/Notion-Icons/Regular/svg/ni-layout-column.svg" alt="Themes" width={20} height={20} />,
     },
+    {
+      id: 'settings' as const,
+      label: 'Configuration',
+      icon: <Image src="/illustrations/Notion-Icons/Regular/svg/gear.svg" alt="Configuration" width={20} height={20} />,
+    },
   ];
 
-  const handleItemClick = (itemId: 'announcements' | 'themes') => {
+  const handleItemClick = (itemId: 'announcements' | 'themes' | 'settings') => {
     onItemClick?.(itemId);
   };
 

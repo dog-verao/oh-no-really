@@ -3,6 +3,7 @@
 import {
   Box,
   Typography,
+  CircularProgress,
 } from '@mui/material';
 import { useAnnouncements } from '@/contexts/AnnouncementsProvider';
 import { AnnouncementEmbedPreview } from './AnnouncementEmbedPreview';
@@ -43,7 +44,7 @@ export function AnnouncementPreview() {
 
       <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: 0 }}>
         {isLoadingTheme ? (
-          <Typography>Loading theme...</Typography>
+          <CircularProgress />
         ) : (
           <AnnouncementEmbedPreview
             title={formData.title || 'Your announcement title'}

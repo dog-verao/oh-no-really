@@ -19,12 +19,15 @@ export default function DashboardLayout({
   // Determine active item based on current path
   const getActiveItem = () => {
     if (pathname.includes('/themes')) return 'themes';
+    if (pathname.includes('/settings')) return 'settings';
     return 'announcements';
   };
 
-  const handleNavigation = (item: 'announcements' | 'themes') => {
+  const handleNavigation = (item: 'announcements' | 'themes' | 'settings') => {
     if (item === 'themes') {
       router.push('/themes');
+    } else if (item === 'settings') {
+      router.push('/settings');
     } else {
       router.push('/announcements');
     }
@@ -51,7 +54,7 @@ export default function DashboardLayout({
           height: '100vh',
         }}
       >
-        <CircularProgress />
+        <CircularProgress size={58} />
       </Box>
     );
   }
