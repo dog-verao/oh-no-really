@@ -1,6 +1,6 @@
 /**
  * Notifications.fyi Widget
- * Version: 1.0.1
+ * Version: 1.0.3
  * 
  * This script renders notifications in a Shadow DOM to avoid CSS conflicts.
  * It handles different placements, themes, and frequency controls.
@@ -69,12 +69,20 @@
       border-radius: var(--notifications-fyi-modal-borderRadius, 12px);
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
       max-width: 500px;
+      min-width: 350px;
       width: 100%;
       max-height: 80vh;
       overflow-y: auto;
       padding: 32px;
       position: relative;
       pointer-events: auto;
+    }
+
+    .notifications-fyi-modal-content img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      margin: 0 auto;
     }
 
     .notifications-fyi-announcement {
@@ -90,17 +98,30 @@
       font-size: 16px;
       margin-bottom: 8px;
       color: var(--notifications-fyi-modal-titleColor, #1a1a1a);
+      text-align: center;
     }
 
     .notifications-fyi-message {
       margin-bottom: 16px;
       color: #666;
+      text-align: left;
+      line-height: 1.6;
+    }
+
+    .notifications-fyi-message p {
+      margin: 0;
+      margin-bottom: 8px;
+    }
+
+    .notifications-fyi-message p:last-child {
+      margin-bottom: 0;
     }
 
     .notifications-fyi-buttons {
       display: flex;
       gap: 8px;
       flex-wrap: wrap;
+      justify-content: flex-end;
     }
 
     .notifications-fyi-button {
@@ -219,9 +240,9 @@
 
     return buttons.map(button => ({
       text: button.label || button.text || 'Button',
-      url: button.url || '#',
+      url: button.redirectUrl || button.url || '#',
       primary: button.type === 'primary' || button.primary || false,
-      action: button.behavior === 'close' ? 'dismiss' : 'link',
+      action: button.behavior === 'close' ? 'dismiss' : (button.behavior === 'redirect' ? 'link' : 'dismiss'),
     }));
   }
 
@@ -305,10 +326,15 @@
       : 'notifications-fyi-button notifications-fyi-button-secondary';
 
     if (button.action === 'dismiss') {
-      return `<button class="${className}" onclick="window.NotificationsFyiWidget.dismiss('${announcementId}')">${escapeHtml(button.text)}</button>`;
+      return `<button class="${className}" onclick="window.NotificationsFyiWidget.close()">${escapeHtml(button.text)}</button>`;
     }
 
-    return `<a href="${escapeHtml(button.url)}" class="${className}" target="_blank" rel="noopener">${escapeHtml(button.text)}</a>`;
+    if (button.action === 'link' && button.url) {
+      return `<a href="${escapeHtml(button.url)}" class="${className}" target="_blank" rel="noopener">${escapeHtml(button.text)}</a>`;
+    }
+
+    // Default: close modal
+    return `<button class="${className}" onclick="window.NotificationsFyiWidget.close()">${escapeHtml(button.text)}</button>`;
   }
 
   function renderAnnouncement(announcement) {
@@ -317,8 +343,15 @@
     }
 
     const buttons = parseButtons(announcement.buttons);
-    const buttonsHtml = buttons.length > 0
-      ? `<div class="notifications-fyi-buttons">${buttons.map(btn => renderButton(btn, announcement.id)).join('')}</div>`
+    // Sort buttons: secondary first, primary last (rightmost)
+    const sortedButtons = buttons.sort((a, b) => {
+      if (a.primary && !b.primary) return 1; // primary goes last
+      if (!a.primary && b.primary) return -1; // secondary goes first
+      return 0;
+    });
+
+    const buttonsHtml = sortedButtons.length > 0
+      ? `<div class="notifications-fyi-buttons">${sortedButtons.map(btn => renderButton(btn, announcement.id)).join('')}</div>`
       : '';
 
     return `

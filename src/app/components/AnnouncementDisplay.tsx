@@ -2,16 +2,14 @@
 
 import {
   Box,
-  Typography,
   Button,
-  Paper,
-  Stack,
 } from '@mui/material';
 import {
   ArrowBack as BackIcon,
   Edit as EditIcon,
 } from '@mui/icons-material';
 import { useAnnouncements } from '@/contexts/AnnouncementsProvider';
+import { AnnouncementEmbedPreview } from './AnnouncementEmbedPreview';
 
 interface AnnouncementDisplayProps {
   onBack?: () => void;
@@ -94,85 +92,13 @@ export function AnnouncementDisplay({ onBack, onEdit }: AnnouncementDisplayProps
           )}
         </Box>
       )}
-      <Paper
-        elevation={3}
-        sx={{
-          maxWidth: 500,
-          width: '100%',
-          backgroundColor: config.modal.backgroundColor,
-          borderRadius: config.modal.borderRadius,
-          p: 4,
-          position: 'relative',
-        }}
-      >
-        {/* Title */}
-        <Typography
-          variant="h5"
-          sx={{
-            color: config.modal.titleColor,
-            fontWeight: 600,
-            mb: 3,
-            textAlign: 'center',
-          }}
-        >
-          {formData.title || 'Announcement Title'}
-        </Typography>
 
-        {/* Content */}
-        <Box
-          sx={{
-            color: config.modal.titleColor,
-            mb: 4,
-            lineHeight: 1.6,
-            textAlign: 'center',
-            '& p': {
-              margin: 0,
-              marginBottom: 1,
-            },
-            '& p:last-child': {
-              marginBottom: 0,
-            },
-          }}
-          dangerouslySetInnerHTML={{
-            __html: formData.content || 'Announcement content will appear here...'
-          }}
-        />
-
-        {/* Buttons */}
-        {formData.buttons.length > 0 && (
-          <Stack direction="row" spacing={2} justifyContent="center">
-            {formData.buttons.map((button, index) => (
-              <Button
-                key={index}
-                variant={button.type === 'primary' ? 'contained' : 'outlined'}
-                size="medium"
-                sx={{
-                  backgroundColor: button.type === 'primary'
-                    ? config.button.backgroundColor
-                    : config.secondaryButton.backgroundColor,
-                  color: button.type === 'primary'
-                    ? config.button.textColor
-                    : config.secondaryButton.textColor,
-                  borderColor: button.type === 'secondary'
-                    ? config.secondaryButton.borderColor
-                    : 'transparent',
-                  borderRadius: button.type === 'primary'
-                    ? config.button.borderRadius
-                    : config.secondaryButton.borderRadius,
-                  '&:hover': {
-                    backgroundColor: button.type === 'primary'
-                      ? config.button.backgroundColor
-                      : config.secondaryButton.backgroundColor,
-                    opacity: 0.9,
-                  },
-                }}
-              >
-                {button.label || `Button ${index + 1}`}
-              </Button>
-            ))}
-          </Stack>
-        )}
-      </Paper>
+      <AnnouncementEmbedPreview
+        title={formData.title || 'Announcement Title'}
+        message={formData.content || 'Announcement content will appear here...'}
+        buttons={formData.buttons}
+        themeConfig={config}
+      />
     </Box>
   );
 }

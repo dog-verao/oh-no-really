@@ -12,7 +12,7 @@
   // Configuration
   const CONFIG = {
     API_BASE: 'http://localhost:3000', // Fixed API base for local development
-    WIDGET_URL: 'http://localhost:3000/widget/v1/widget.js?v=1.0.1', // Fixed widget URL for local development
+    WIDGET_URL: 'http://localhost:3000/widget/v1/widget.js?v=1.0.3', // Fixed widget URL for local development
     VERSION: '1.0.2',
     Z_INDEX: 2147483000, // High z-index to avoid conflicts
   };
