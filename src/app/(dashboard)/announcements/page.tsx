@@ -7,7 +7,6 @@ import {
   Paper,
   IconButton,
   Stack,
-  CircularProgress,
   Menu,
   MenuItem,
   Chip,
@@ -254,6 +253,7 @@ export default function AnnouncementsPage() {
               <DataGrid
                 rows={announcements}
                 columns={columns}
+                onRowClick={handleRowClick}
                 getRowId={(row) => row.id}
                 pageSizeOptions={[10, 25, 50]}
                 initialState={{

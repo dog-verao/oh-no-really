@@ -6,7 +6,6 @@ import { AnnouncementForm } from '../../../components/AnnouncementForm';
 import { AnnouncementPreview } from '../../../components/AnnouncementPreview';
 import { AnnouncementsProvider, useAnnouncements } from '@/contexts/AnnouncementsProvider';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
 
 function CreateAnnouncementContent() {
   const router = useRouter();
