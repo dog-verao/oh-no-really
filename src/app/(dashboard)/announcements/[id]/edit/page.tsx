@@ -1,18 +1,20 @@
 'use client';
 
-import { Box, Typography, Alert, CircularProgress } from '@mui/material';
+import { Box, Typography, Alert, CircularProgress, IconButton, Tooltip } from '@mui/material';
 import { Header } from '../../../../components/Header';
 import { AnnouncementForm } from '../../../../components/AnnouncementForm';
 import { AnnouncementPreview } from '../../../../components/AnnouncementPreview';
 import { AnnouncementsProvider, useAnnouncements } from '@/contexts/AnnouncementsProvider';
 import { useRouter, useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 
 function EditAnnouncementContent() {
   const router = useRouter();
   const params = useParams();
   const announcementId = params.id as string;
   const accountId = 'account_1';
+  const [showPreview, setShowPreview] = useState(false);
 
   const { loadAnnouncement, isLoading, error, isUpdating, formData, updateAnnouncement } = useAnnouncements();
 
@@ -28,6 +30,10 @@ function EditAnnouncementContent() {
 
   const handleCancel = () => {
     router.push(`/announcements/${announcementId}`);
+  };
+
+  const handleTogglePreview = () => {
+    setShowPreview(!showPreview);
   };
 
   if (isLoading) {
@@ -62,15 +68,18 @@ function EditAnnouncementContent() {
 
   return (
     <Box sx={{ display: 'flex', height: '100vh' }}>
-      <Box sx={{ flex: 1, overflow: 'auto' }}>
+      <Box sx={{
+        flex: showPreview ? 1 : 1,
+        overflow: 'auto',
+        transition: 'flex 0.3s ease-in-out',
+        position: 'relative'
+      }}>
         <Header
           title="Edit Announcement"
           subtitle="Update your announcement settings."
           actions={{
             onCancel: handleCancel,
-            onPreview: () => {
-              console.log('Preview is always visible');
-            },
+            onPreview: handleTogglePreview,
             onSave: async () => {
               if (!formData.title.trim() || !formData.content.trim()) {
                 return;
@@ -84,6 +93,11 @@ function EditAnnouncementContent() {
             },
             isSubmitting: isUpdating,
             submitText: 'Save Changes',
+            previewIcon: showPreview
+              ? "/illustrations/Notion-Icons/Regular/svg/ni-side-peek-center.svg"
+              : "/illustrations/Notion-Icons/Regular/svg/ni-sidebar-text.svg",
+            previewTooltip: showPreview ? "Hide Preview" : "Show Preview",
+            useIconButtons: showPreview,
           }}
         />
         <AnnouncementForm
@@ -92,9 +106,28 @@ function EditAnnouncementContent() {
           onSuccess={handleSuccess}
         />
       </Box>
-      <Box sx={{ flex: 1, borderLeft: '1px solid', borderColor: 'divider', overflow: 'auto' }}>
-        <AnnouncementPreview />
-      </Box>
+
+      {showPreview && (
+        <Box sx={{
+          flex: 1,
+          borderLeft: '1px solid',
+          borderColor: 'divider',
+          overflow: 'auto',
+          animation: 'slideIn 0.3s ease-in-out',
+          '@keyframes slideIn': {
+            from: {
+              transform: 'translateX(100%)',
+              opacity: 0,
+            },
+            to: {
+              transform: 'translateX(0)',
+              opacity: 1,
+            },
+          },
+        }}>
+          <AnnouncementPreview />
+        </Box>
+      )}
     </Box>
   );
 }
