@@ -31,7 +31,8 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
 
   // If user is not signed in and the current path is not auth-related, redirect to sign in
-  if (!user && !request.nextUrl.pathname.startsWith('/auth')) {
+  // Allow embed API and static assets to be accessed without authentication
+  if (!user && !request.nextUrl.pathname.startsWith('/auth') && !request.nextUrl.pathname.startsWith('/api/embed')) {
     const redirectUrl = new URL('/auth/signin', request.url)
     return NextResponse.redirect(redirectUrl)
   }
@@ -52,8 +53,9 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
+     * - loader/ and widget/ (embed scripts)
      * Feel free to modify this pattern to include more paths.
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|loader/|widget/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|js)$).*)',
   ],
 }

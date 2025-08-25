@@ -80,7 +80,7 @@ export const Sidebar = ({
           }}
         >
           <Image
-            src={collapsed ? "/illustrations/Notion-Icons/Regular/svg/ni-arrow-right-circle.svg" : "/illustrations/Notion-Icons/Regular/svg/ni-arrow-left-circle.svg"}
+            src={collapsed ? "/illustrations/Notion-Icons/Regular/svg/bracket-arrow-right.svg" : "/illustrations/Notion-Icons/Regular/svg/bracket-arrow-left.svg"}
             alt={collapsed ? "Expand" : "Collapse"}
             width={20}
             height={20}
