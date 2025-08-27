@@ -114,6 +114,7 @@ export async function PUT(
         title: body.title,
         message: body.content,
         themeId: body.themeId,
+        placement: body.placement || 'modal',
         buttons: body.buttons || null,
         // Don't allow changing accountId or createdBy for security
       },

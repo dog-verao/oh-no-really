@@ -32,7 +32,7 @@ export async function middleware(request: NextRequest) {
 
   // If user is not signed in and the current path is not auth-related, redirect to sign in
   // Allow embed API and static assets to be accessed without authentication
-  if (!user && !request.nextUrl.pathname.startsWith('/auth') && !request.nextUrl.pathname.startsWith('/api/embed')) {
+  if (!user && !request.nextUrl.pathname.startsWith('/auth') && !request.nextUrl.pathname.startsWith('/api/embed') && !request.nextUrl.pathname.startsWith('/api/embed/render')) {
     const redirectUrl = new URL('/auth/signin', request.url)
     return NextResponse.redirect(redirectUrl)
   }

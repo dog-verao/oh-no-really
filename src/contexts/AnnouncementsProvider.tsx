@@ -14,6 +14,7 @@ interface AnnouncementFormData {
   title: string;
   content: string;
   themeId: string | null;
+  placement: 'modal' | 'toast' | 'tooltip';
   buttons: Button[];
 }
 
@@ -76,6 +77,7 @@ const defaultFormData: AnnouncementFormData = {
   title: '',
   content: '',
   themeId: null,
+  placement: 'modal',
   buttons: [{ label: 'Got it', type: 'primary', behavior: 'close' }],
 };
 
@@ -137,6 +139,7 @@ export function AnnouncementsProvider({ children, accountId }: AnnouncementsProv
           title: data.title,
           content: data.content,
           themeId: data.themeId || undefined,
+          placement: data.placement,
           buttons: data.buttons,
         }),
       });
@@ -168,6 +171,7 @@ export function AnnouncementsProvider({ children, accountId }: AnnouncementsProv
           title: data.title,
           content: data.content,
           themeId: data.themeId || undefined,
+          placement: data.placement,
           buttons: data.buttons,
         }),
       });
@@ -202,6 +206,7 @@ export function AnnouncementsProvider({ children, accountId }: AnnouncementsProv
         title: announcement.title,
         content: announcement.message,
         themeId: announcement.themeId || null,
+        placement: announcement.placement || 'modal',
         buttons: announcement.buttons || [{ label: 'Got it', type: 'primary', behavior: 'close' }],
       });
     } catch (err) {

@@ -98,6 +98,7 @@ export function AnnouncementDisplay({ onBack, onEdit }: AnnouncementDisplayProps
         message={formData.content || 'Announcement content will appear here...'}
         buttons={formData.buttons}
         themeConfig={config}
+        placement={formData.placement || 'modal'}
       />
     </Box>
   );

@@ -49,6 +49,7 @@ model Announcement {
   title       String
   message     String
   buttons     Json?
+  placement   String    @default("modal")
   draft       Boolean   @default(true)
   publishedAt DateTime?
   createdAt   DateTime  @default(now())

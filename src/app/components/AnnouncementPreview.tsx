@@ -51,6 +51,7 @@ export function AnnouncementPreview() {
             message={formData.content || 'Your announcement content will appear here...'}
             buttons={formData.buttons}
             themeConfig={config}
+            placement={formData.placement || 'modal'}
           />
         )}
       </Box>

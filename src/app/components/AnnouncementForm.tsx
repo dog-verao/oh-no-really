@@ -15,7 +15,8 @@ import {
 } from '@mui/material';
 import { ThemeSelector } from './ThemeSelector';
 import { TiptapEditor } from './TiptapEditor';
-import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
+import { PlacementSelector } from './PlacementSelector';
+import { useState, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAnnouncements } from '@/contexts/AnnouncementsProvider';
 
@@ -63,6 +64,7 @@ export function AnnouncementForm({
           title: '',
           content: '',
           themeId: null,
+          placement: 'modal',
           buttons: [{ label: 'Got it', type: 'primary', behavior: 'close' }],
         });
       } else {
@@ -149,6 +151,12 @@ export function AnnouncementForm({
               maxHeight={600}
             />
           </Stack>
+
+          <PlacementSelector
+            value={formData.placement || 'modal'}
+            onChange={(placement) => updateFormData({ placement })}
+            disabled={isCreating || isUpdating}
+          />
 
           {/* Theme Selection */}
           <Stack spacing={2}>

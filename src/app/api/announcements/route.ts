@@ -36,6 +36,7 @@ export async function POST(req: NextRequest) {
         title: body.title,
         message: body.content,
         themeId: body.themeId,
+        placement: body.placement || 'modal',
         accountId: accountUser.accountId,
         buttons: body.buttons || null,
       },
