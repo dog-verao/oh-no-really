@@ -16,7 +16,7 @@ import {
 import { ThemeSelector } from './ThemeSelector';
 import { TiptapEditor } from './TiptapEditor';
 import { PlacementSelector } from './PlacementSelector';
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAnnouncements } from '@/contexts/AnnouncementsProvider';
 
@@ -41,57 +41,11 @@ export function AnnouncementForm({
   const {
     formData,
     updateFormData,
-    createAnnouncement,
-    updateAnnouncement,
     isCreating,
     isUpdating,
     error,
   } = useAnnouncements();
 
-
-
-  const handleSubmit = useCallback(async () => {
-    if (!formData.title.trim() || !formData.content.trim()) {
-      return;
-    }
-
-    try {
-      if (mode === 'create') {
-        await createAnnouncement(formData);
-        setShowSuccess(true);
-        // Reset form for create mode
-        updateFormData({
-          title: '',
-          content: '',
-          themeId: null,
-          placement: 'modal',
-          buttons: [{ label: 'Got it', type: 'primary', behavior: 'close' }],
-        });
-      } else {
-        // For edit mode, we need the announcement ID from the URL
-        const pathParts = window.location.pathname.split('/');
-        const announcementId = pathParts[pathParts.length - 2]; // /announcements/[id]/edit
-        await updateAnnouncement(announcementId, formData);
-        setShowSuccess(true);
-      }
-
-      if (onSuccess) {
-        onSuccess();
-      }
-    } catch (error) {
-      console.error('Failed to submit announcement:', error);
-    }
-  }, [formData, mode, createAnnouncement, updateAnnouncement, updateFormData, onSuccess]);
-
-
-
-  const handleCancel = useCallback(() => {
-    router.push('/announcements');
-  }, [router]);
-
-  const isFormValid = useMemo(() => {
-    return formData.title.trim() && formData.content.trim();
-  }, [formData.title, formData.content]);
 
   const addButton = useCallback(() => {
     if (!newButtonLabel.trim()) return;

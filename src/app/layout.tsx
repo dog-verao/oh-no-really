@@ -4,7 +4,7 @@ import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
 import "./globals.css";
 import { ThemeProvider } from '@mui/material/styles';
 import theme from '@/theme';
-import QueryProvider from '@/components/QueryProvider';
+import QueryProvider from '@/providers/QueryProvider';
 import { AuthProvider } from '@/contexts/AuthContext';
 
 const geistSans = Geist({

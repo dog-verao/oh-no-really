@@ -45,7 +45,7 @@ export interface UpdateAnnouncementData {
 }
 
 
-const getAllByAccountId = async (accountId: string): Promise<Announcement[]> => {
+export const getAllByAccountId = async (accountId: string): Promise<Announcement[]> => {
   const response = await fetch('/api/announcements');
 
   if (!response.ok) {
@@ -55,7 +55,7 @@ const getAllByAccountId = async (accountId: string): Promise<Announcement[]> => 
   return response.json();
 };
 
-const getAnnouncementById = async (announcementId: string, accountId: string): Promise<Announcement> => {
+const getAnnouncementById = async (announcementId: string): Promise<Announcement> => {
   const response = await fetch(`/api/announcements/${announcementId}`);
 
   if (!response.ok) {
@@ -132,7 +132,7 @@ export const useAnnouncements = (accountId: string) => {
     }
 
     // If not found in cache, fetch from API
-    return getAnnouncementById(announcementId, accountId);
+    return getAnnouncementById(announcementId);
   };
 
   const createMutation = useMutation({

@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Box, Tooltip, IconButton } from '@mui/material';
+import { Box, Tooltip as MuiTooltip, IconButton } from '@mui/material';
 import { Add as AddIcon } from '@mui/icons-material';
+import { ThemeConfig } from './ModalAnnouncement';
 
-interface MorphingPopoutProps {
+interface TooltipProps {
   title: string;
   message: string;
   buttons: Array<{
@@ -11,28 +12,11 @@ interface MorphingPopoutProps {
     behavior: 'close' | 'redirect';
     redirectUrl?: string;
   }>;
-  themeConfig: {
-    modal: {
-      backgroundColor: string;
-      titleColor: string;
-      borderRadius: string;
-    };
-    button: {
-      backgroundColor: string;
-      textColor: string;
-      borderRadius: string;
-    };
-    secondaryButton: {
-      backgroundColor: string;
-      textColor: string;
-      borderColor: string;
-      borderRadius: string;
-    };
-  };
+  themeConfig: ThemeConfig;
   onClose?: () => void;
 }
 
-const MorphingPopout: React.FC<MorphingPopoutProps> = ({
+const TooltipAnnouncement: React.FC<TooltipProps> = ({
   title,
   message,
   buttons,
@@ -191,7 +175,7 @@ const MorphingPopout: React.FC<MorphingPopoutProps> = ({
 
   return (
     <Box sx={{ position: 'relative', minHeight: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <Tooltip
+      <MuiTooltip
         title={tooltipContent}
         open={open}
         onClose={handleClose}
@@ -234,9 +218,9 @@ const MorphingPopout: React.FC<MorphingPopoutProps> = ({
         >
           <AddIcon />
         </IconButton>
-      </Tooltip>
+      </MuiTooltip>
     </Box>
   );
 };
 
-export default MorphingPopout;
+export default TooltipAnnouncement;
