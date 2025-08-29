@@ -131,7 +131,7 @@ function initializeAnnouncementsWidget(accountId: string, baseUrl?: string) {
   container.style.left = '0';
   container.style.width = '100%';
   container.style.height = '100%';
-  container.style.zIndex = '999999';
+  container.style.zIndex = '9999';
 
   document.body.appendChild(container);
 

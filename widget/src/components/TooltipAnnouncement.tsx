@@ -165,15 +165,19 @@ const TooltipAnnouncement: React.FC<TooltipProps> = ({
   );
 
   return (
-    <Box sx={{ position: 'fixed', bottom: '20px', right: '20px', zIndex: 999999 }}>
+    <Box sx={{ position: 'fixed', bottom: '20px', right: '20px', zIndex: 9999 }}>
       <MuiTooltip
         open={open}
         onClose={handleClose}
         title={tooltipContent}
         placement="top"
+        disableHoverListener
+        disableFocusListener
+        disableTouchListener
         arrow
         PopperProps={{
           sx: {
+            zIndex: 99999,
             '& .MuiTooltip-tooltip': {
               backgroundColor: 'transparent',
               padding: 0,
