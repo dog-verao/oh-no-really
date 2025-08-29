@@ -4,7 +4,6 @@ import {
   Box,
   Button,
   Typography,
-  Paper,
   IconButton,
   Stack,
   Menu,
@@ -37,6 +36,7 @@ export default function AnnouncementsPage() {
     error,
     deleteAnnouncement,
     isDeleting,
+    publishAnnouncement,
   } = useAnnouncements(account?.id || '');
 
   const isLoading = isLoadingAccount || isLoadingAnnouncements;
@@ -55,6 +55,10 @@ export default function AnnouncementsPage() {
 
   const handleEditAnnouncement = (announcementId: string) => {
     router.push(`/announcements/${announcementId}/edit`);
+  };
+
+  const handlePublishAnnouncement = (announcementId: string) => {
+    publishAnnouncement(announcementId);
   };
 
   const handleDeleteClick = (announcementId: string) => {
@@ -345,6 +349,26 @@ export default function AnnouncementsPage() {
           />
           Edit
         </MenuItem>
+        {selectedAnnouncementId && announcements.find(a => a.id === selectedAnnouncementId)?.draft && (
+          <MenuItem
+            onClick={() => {
+              if (selectedAnnouncementId) {
+                handlePublishAnnouncement(selectedAnnouncementId);
+              }
+              handleMenuClose();
+            }}
+            sx={{ color: 'success.main' }}
+          >
+            <Image
+              src="/illustrations/Notion-Icons/Regular/svg/ni-rocket.svg"
+              alt="Publish"
+              width={16}
+              height={16}
+              style={{ marginRight: 8 }}
+            />
+            Publish
+          </MenuItem>
+        )}
         <MenuItem
           onClick={() => {
             if (selectedAnnouncementId) {

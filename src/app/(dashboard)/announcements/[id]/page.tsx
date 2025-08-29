@@ -4,14 +4,9 @@ import {
   Box,
   Button,
   CircularProgress,
-  Typography,
-  Paper,
-  Stack,
-  Chip,
 } from '@mui/material';
 import {
   ArrowBack as BackIcon,
-  Edit as EditIcon,
 } from '@mui/icons-material';
 import { Header } from '../../../components/Header';
 import { AnnouncementDisplay } from '../../../components/AnnouncementDisplay';
@@ -23,9 +18,8 @@ function AnnouncementDetailContent() {
   const params = useParams();
   const router = useRouter();
   const announcementId = params.id as string;
-  const accountId = 'account_1';
 
-  const { loadAnnouncement, isLoading, error, formData, theme } = useAnnouncements();
+  const { loadAnnouncement, isLoading, error } = useAnnouncements();
 
   useEffect(() => {
     if (announcementId) {
@@ -73,6 +67,7 @@ function AnnouncementDetailContent() {
       <AnnouncementDisplay
         onBack={handleBack}
         onEdit={handleEdit}
+        announcementId={announcementId}
       />
     </Box>
   );

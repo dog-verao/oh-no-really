@@ -108,6 +108,21 @@ const deleteAnnouncement = async (announcementId: string, accountId: string): Pr
   }
 };
 
+const publishAnnouncement = async (announcementId: string, accountId: string): Promise<Announcement> => {
+  const response = await fetch(`/api/announcements/${announcementId}/publish`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to publish announcement');
+  }
+
+  return response.json();
+};
+
 // Custom hook for announcements
 export const useAnnouncements = (accountId: string) => {
   const queryClient = useQueryClient();
@@ -156,6 +171,13 @@ export const useAnnouncements = (accountId: string) => {
     },
   });
 
+  const publishMutation = useMutation({
+    mutationFn: (announcementId: string) => publishAnnouncement(announcementId, accountId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['announcements', accountId] });
+    },
+  });
+
   return {
     // Query data
     announcements: announcements || [],
@@ -183,5 +205,11 @@ export const useAnnouncements = (accountId: string) => {
     deleteAnnouncementAsync: deleteMutation.mutateAsync,
     isDeleting: deleteMutation.isPending,
     deleteError: deleteMutation.error,
+
+    // Publish functions
+    publishAnnouncement: publishMutation.mutate,
+    publishAnnouncementAsync: publishMutation.mutateAsync,
+    isPublishing: publishMutation.isPending,
+    publishError: publishMutation.error,
   };
 };
