@@ -20,14 +20,14 @@ import Image from 'next/image';
 interface SidebarProps {
   open: boolean;
   onClose?: () => void;
-  activeItem?: 'announcements' | 'themes' | 'settings';
-  onItemClick?: (item: 'announcements' | 'themes' | 'settings') => void;
+  activeItem?: 'modal' | 'tooltip' | 'toast' | 'themes' | 'settings';
+  onItemClick?: (item: 'modal' | 'tooltip' | 'toast' | 'themes' | 'settings') => void;
   collapsed?: boolean;
   onToggleCollapse?: () => void;
 }
 
 export const Sidebar = ({
-  activeItem = 'announcements',
+  activeItem = 'modal',
   onItemClick,
   collapsed = false,
   onToggleCollapse
@@ -39,9 +39,19 @@ export const Sidebar = ({
 
   const menuItems = [
     {
-      id: 'announcements' as const,
-      label: 'Announcements',
-      icon: <Image src="/illustrations/Notion-Icons/Regular/svg/ni-rocket.svg" alt="Announcements" width={20} height={20} />,
+      id: 'modal' as const,
+      label: 'Modal',
+      icon: <Image src="/illustrations/Notion-Icons/Regular/svg/ni-browser.svg" alt="Modal" width={20} height={20} />,
+    },
+    {
+      id: 'tooltip' as const,
+      label: 'Tooltip',
+      icon: <Image src="/illustrations/Notion-Icons/Regular/svg/tooltip.svg" alt="Tooltip" width={20} height={20} />,
+    },
+    {
+      id: 'toast' as const,
+      label: 'Toast',
+      icon: <Image src="/illustrations/Notion-Icons/Regular/svg/ni-bell.svg" alt="Toast" width={20} height={20} />,
     },
     {
       id: 'themes' as const,
@@ -55,7 +65,7 @@ export const Sidebar = ({
     },
   ];
 
-  const handleItemClick = (itemId: 'announcements' | 'themes' | 'settings') => {
+  const handleItemClick = (itemId: 'modal' | 'tooltip' | 'toast' | 'themes' | 'settings') => {
     onItemClick?.(itemId);
   };
 

@@ -18,24 +18,32 @@ export default function DashboardLayout({
 
   // Determine active item based on current path
   const getActiveItem = () => {
+    if (pathname.includes('/tooltip')) return 'tooltip';
+    if (pathname.includes('/toast')) return 'toast';
     if (pathname.includes('/themes')) return 'themes';
     if (pathname.includes('/settings')) return 'settings';
-    return 'announcements';
+    return 'modal';
   };
 
-  const handleNavigation = (item: 'announcements' | 'themes' | 'settings') => {
-    if (item === 'themes') {
+  const handleNavigation = (item: 'modal' | 'tooltip' | 'toast' | 'themes' | 'settings') => {
+    if (item === 'tooltip') {
+      router.push('/tooltip');
+    } else if (item === 'toast') {
+      router.push('/toast');
+    } else if (item === 'themes') {
       router.push('/themes');
     } else if (item === 'settings') {
       router.push('/settings');
     } else {
-      router.push('/announcements');
+      router.push('/modal');
     }
   };
 
   // Auto-collapse sidebar when entering announcement edit/create pages
   useEffect(() => {
-    if (pathname.includes('/announcements/new') || pathname.includes('/announcements/') && pathname.includes('/edit')) {
+    if (pathname.includes('/modal/new') || pathname.includes('/modal/') && pathname.includes('/edit') ||
+        pathname.includes('/tooltip/new') || pathname.includes('/tooltip/') && pathname.includes('/edit') ||
+        pathname.includes('/toast/new') || pathname.includes('/toast/') && pathname.includes('/edit')) {
       setSidebarCollapsed(true);
     }
   }, [pathname]);

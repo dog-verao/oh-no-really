@@ -39,7 +39,7 @@ export async function middleware(request: NextRequest) {
 
   // If user is signed in and trying to access auth pages, redirect to dashboard
   if (user && request.nextUrl.pathname.startsWith('/auth')) {
-    const redirectUrl = new URL('/announcements', request.url)
+    const redirectUrl = new URL('/modal', request.url)
     return NextResponse.redirect(redirectUrl)
   }
 

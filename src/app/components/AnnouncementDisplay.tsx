@@ -4,23 +4,21 @@ import {
   Box,
   Button,
 } from '@mui/material';
-import {
-  ArrowBack as BackIcon,
-  Edit as EditIcon,
-} from '@mui/icons-material';
 import { useAnnouncements } from '@/contexts/AnnouncementsProvider';
 import { useAnnouncements as useAnnouncementsHook, Announcement } from '@/hooks/useAnnouncements';
 import { useCurrentAccount } from '@/hooks/useCurrentAccount';
 import { AnnouncementEmbedPreview } from './AnnouncementEmbedPreview';
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 
 interface AnnouncementDisplayProps {
   onBack?: () => void;
   onEdit?: () => void;
   announcementId?: string;
+  placement?: 'modal' | 'toast' | 'tooltip';
 }
 
-export function AnnouncementDisplay({ onBack, onEdit, announcementId }: AnnouncementDisplayProps) {
+export function AnnouncementDisplay({ onBack, onEdit, announcementId, placement = 'modal' }: AnnouncementDisplayProps) {
   const { formData, theme } = useAnnouncements();
   const { account } = useCurrentAccount();
   const { publishAnnouncement, isPublishing, getAnnouncementById } = useAnnouncementsHook(account?.id || '');
@@ -80,7 +78,7 @@ export function AnnouncementDisplay({ onBack, onEdit, announcementId }: Announce
           {onBack && (
             <Button
               variant="outlined"
-              startIcon={<BackIcon />}
+              startIcon={<Image src="/illustrations/Notion-Icons/Regular/svg/ni-arrow-left-circle.svg" alt="Back" width={20} height={20} />}
               onClick={onBack}
               sx={{
                 backgroundColor: 'rgba(255, 255, 255, 0.9)',
@@ -95,7 +93,7 @@ export function AnnouncementDisplay({ onBack, onEdit, announcementId }: Announce
           {onEdit && (
             <Button
               variant="contained"
-              startIcon={<EditIcon />}
+              startIcon={<Image src="/illustrations/Notion-Icons/Regular/svg/ni-pencil.svg" alt="Edit" width={20} height={20} />}
               onClick={onEdit}
               sx={{
                 backgroundColor: 'rgba(255, 255, 255, 0.9)',
@@ -122,6 +120,7 @@ export function AnnouncementDisplay({ onBack, onEdit, announcementId }: Announce
             variant="contained"
             onClick={handlePublish}
             disabled={isPublishing}
+            startIcon={<Image src="/illustrations/Notion-Icons/Regular/svg/ni-rocket.svg" alt="Publish" width={20} height={20} />}
             sx={{
               backgroundColor: 'rgba(255, 255, 255, 0.9)',
               color: '#000',
@@ -140,7 +139,7 @@ export function AnnouncementDisplay({ onBack, onEdit, announcementId }: Announce
         message={formData.content || 'Announcement content will appear here...'}
         buttons={formData.buttons}
         themeConfig={config}
-        placement={formData.placement || 'modal'}
+        placement={placement}
       />
     </Box>
   );

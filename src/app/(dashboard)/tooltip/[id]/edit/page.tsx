@@ -75,8 +75,8 @@ function EditAnnouncementContent() {
         position: 'relative'
       }}>
         <Header
-          title="Edit Announcement"
-          subtitle="Update your announcement settings."
+          title="Edit Tooltip"
+          subtitle="Update your tooltip announcement settings."
           actions={{
             onCancel: handleCancel,
             onPreview: handleTogglePreview,
@@ -86,7 +86,7 @@ function EditAnnouncementContent() {
               }
               try {
                 await updateAnnouncement(announcementId, formData);
-                router.push(`/announcements/${announcementId}`);
+                router.push(`/tooltip/${announcementId}`);
               } catch (error) {
                 console.error('Failed to update announcement:', error);
               }
@@ -103,6 +103,7 @@ function EditAnnouncementContent() {
         <AnnouncementForm
           mode="edit"
           accountId={accountId}
+          placement="tooltip"
           onSuccess={handleSuccess}
         />
       </Box>
@@ -125,7 +126,7 @@ function EditAnnouncementContent() {
             },
           },
         }}>
-          <AnnouncementPreview />
+          <AnnouncementPreview placement="tooltip" />
         </Box>
       )}
     </Box>

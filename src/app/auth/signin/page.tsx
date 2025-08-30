@@ -28,7 +28,7 @@ export default function SignInPage() {
       if (error) {
         setError(error.message)
       } else {
-        router.push('/announcements')
+        router.push('/modal')
       }
     } catch (err) {
       setError('An unexpected error occurred')

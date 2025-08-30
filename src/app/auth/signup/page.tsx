@@ -80,7 +80,7 @@ export default function SignUpPage() {
         }
 
         // Redirect to dashboard
-        router.push('/announcements')
+        router.push('/modal')
       }
     } catch (err) {
       setError('An unexpected error occurred')

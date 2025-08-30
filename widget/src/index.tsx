@@ -1,4 +1,4 @@
-import AnnouncementsWidget, { initializeAnnouncementsWidget } from './AnnouncementsWidget';
+import { initializeAnnouncementsWidget } from './AnnouncementsWidget';
 
 declare global {
   interface Window {

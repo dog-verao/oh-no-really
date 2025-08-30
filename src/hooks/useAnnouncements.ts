@@ -45,8 +45,10 @@ export interface UpdateAnnouncementData {
 }
 
 
-export const getAllByAccountId = async (accountId: string): Promise<Announcement[]> => {
-  const response = await fetch('/api/announcements');
+export const getAllByAccountId = async (placement?: string): Promise<Announcement[]> => {
+  const url = placement ? `/api/announcements?placement=${placement}` : '/api/announcements';
+  console.log('Fetching announcements with URL:', url);
+  const response = await fetch(url);
 
   if (!response.ok) {
     throw new Error('Failed to fetch announcements');
@@ -124,7 +126,7 @@ const publishAnnouncement = async (announcementId: string, accountId: string): P
 };
 
 // Custom hook for announcements
-export const useAnnouncements = (accountId: string) => {
+export const useAnnouncements = (accountId: string, placement?: string) => {
   const queryClient = useQueryClient();
 
   const {
@@ -133,8 +135,8 @@ export const useAnnouncements = (accountId: string) => {
     error,
     refetch,
   } = useQuery({
-    queryKey: ['announcements', accountId],
-    queryFn: () => getAllByAccountId(accountId),
+    queryKey: ['announcements', accountId, placement],
+    queryFn: () => getAllByAccountId(placement),
     enabled: !!accountId,
   });
 
@@ -153,28 +155,32 @@ export const useAnnouncements = (accountId: string) => {
   const createMutation = useMutation({
     mutationFn: (data: CreateAnnouncementData) => createAnnouncement(data, accountId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['announcements', accountId] });
+      console.log('Invalidating queries for placement:', placement);
+      queryClient.invalidateQueries({ queryKey: ['announcements', accountId, placement] });
     },
   });
 
   const updateMutation = useMutation({
     mutationFn: (data: UpdateAnnouncementData) => updateAnnouncement(data, accountId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['announcements', accountId] });
+      console.log('Invalidating queries for placement:', placement);
+      queryClient.invalidateQueries({ queryKey: ['announcements', accountId, placement] });
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: (announcementId: string) => deleteAnnouncement(announcementId, accountId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['announcements', accountId] });
+      console.log('Invalidating queries for placement:', placement);
+      queryClient.invalidateQueries({ queryKey: ['announcements', accountId, placement] });
     },
   });
 
   const publishMutation = useMutation({
     mutationFn: (announcementId: string) => publishAnnouncement(announcementId, accountId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['announcements', accountId] });
+      console.log('Invalidating queries for placement:', placement);
+      queryClient.invalidateQueries({ queryKey: ['announcements', accountId, placement] });
     },
   });
 

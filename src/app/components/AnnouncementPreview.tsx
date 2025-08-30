@@ -8,7 +8,11 @@ import {
 import { useAnnouncements } from '@/contexts/AnnouncementsProvider';
 import { AnnouncementEmbedPreview } from './AnnouncementEmbedPreview';
 
-export function AnnouncementPreview() {
+interface AnnouncementPreviewProps {
+  placement?: 'modal' | 'toast' | 'tooltip';
+}
+
+export function AnnouncementPreview({ placement = 'modal' }: AnnouncementPreviewProps) {
   const { formData, theme, isLoadingTheme } = useAnnouncements();
 
   // Use theme config or fallback to default
@@ -51,7 +55,7 @@ export function AnnouncementPreview() {
             message={formData.content || 'Your announcement content will appear here...'}
             buttons={formData.buttons}
             themeConfig={config}
-            placement={formData.placement || 'modal'}
+            placement={placement}
           />
         )}
       </Box>

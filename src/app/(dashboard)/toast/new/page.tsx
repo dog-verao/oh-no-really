@@ -32,10 +32,10 @@ function CreateAnnouncementContent() {
         position: 'relative'
       }}>
         <Header
-          title="Create Announcement"
-          subtitle="Set up your user announcement flow."
+          title="Create Toast"
+          subtitle="Set up your toast announcement flow."
           actions={{
-            onCancel: () => router.push('/announcements'),
+            onCancel: () => router.push('/toast'),
             onPreview: handleTogglePreview,
             onSave: async () => {
               if (!formData.title.trim() || !formData.content.trim()) {
@@ -43,7 +43,7 @@ function CreateAnnouncementContent() {
               }
               try {
                 await createAnnouncement(formData);
-                router.push('/announcements');
+                router.push('/toast');
               } catch (error) {
                 console.error('Failed to create announcement:', error);
               }
@@ -60,6 +60,7 @@ function CreateAnnouncementContent() {
         <AnnouncementForm
           mode="create"
           accountId={accountId}
+          placement="toast"
           onSuccess={handleSuccess}
         />
       </Box>
@@ -82,7 +83,7 @@ function CreateAnnouncementContent() {
             },
           },
         }}>
-          <AnnouncementPreview />
+          <AnnouncementPreview placement="toast" />
         </Box>
       )}
     </Box>

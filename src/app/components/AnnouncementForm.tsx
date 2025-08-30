@@ -15,20 +15,21 @@ import {
 } from '@mui/material';
 import { ThemeSelector } from './ThemeSelector';
 import { TiptapEditor } from './TiptapEditor';
-import { PlacementSelector } from './PlacementSelector';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAnnouncements } from '@/contexts/AnnouncementsProvider';
 
 interface AnnouncementFormProps {
   mode: 'create' | 'edit';
   accountId: string;
+  placement: 'modal' | 'toast' | 'tooltip';
   onSuccess?: () => void;
 }
 
 export function AnnouncementForm({
   mode,
   accountId,
+  placement,
   onSuccess,
 }: AnnouncementFormProps) {
   const router = useRouter();
@@ -45,6 +46,12 @@ export function AnnouncementForm({
     isUpdating,
     error,
   } = useAnnouncements();
+
+  // Initialize form data with the fixed placement
+  useEffect(() => {
+    console.log('Setting placement in form data:', placement);
+    updateFormData({ placement });
+  }, [placement, updateFormData]);
 
 
   const addButton = useCallback(() => {
@@ -105,12 +112,6 @@ export function AnnouncementForm({
               maxHeight={600}
             />
           </Stack>
-
-          <PlacementSelector
-            value={formData.placement || 'modal'}
-            onChange={(placement) => updateFormData({ placement })}
-            disabled={isCreating || isUpdating}
-          />
 
           {/* Theme Selection */}
           <Stack spacing={2}>

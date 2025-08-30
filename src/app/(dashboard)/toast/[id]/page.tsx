@@ -28,11 +28,11 @@ function AnnouncementDetailContent() {
   }, [announcementId, loadAnnouncement]);
 
   const handleEdit = () => {
-    router.push(`/announcements/${announcementId}/edit`);
+    router.push(`/toast/${announcementId}/edit`);
   };
 
   const handleBack = () => {
-    router.push('/announcements');
+    router.push('/toast');
   };
 
   if (isLoading) {
@@ -68,6 +68,7 @@ function AnnouncementDetailContent() {
         onBack={handleBack}
         onEdit={handleEdit}
         announcementId={announcementId}
+        placement="toast"
       />
     </Box>
   );

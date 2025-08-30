@@ -77,7 +77,7 @@ const defaultFormData: AnnouncementFormData = {
   title: '',
   content: '',
   themeId: null,
-  placement: 'modal',
+  placement: 'modal', // This will be overridden by the placement prop in each form
   buttons: [{ label: 'Got it', type: 'primary', behavior: 'close' }],
 };
 

@@ -37,24 +37,24 @@ export default function AnnouncementsPage() {
     deleteAnnouncement,
     isDeleting,
     publishAnnouncement,
-  } = useAnnouncements(account?.id || '');
+  } = useAnnouncements(account?.id || '', 'modal');
 
   const isLoading = isLoadingAccount || isLoadingAnnouncements;
 
   const handleRowClick = (params: GridRowParams) => {
-    router.push(`/announcements/${params.row.id}`);
+    router.push(`/modal/${params.row.id}`);
   };
 
   const handleCreateNew = () => {
-    router.push('/announcements/new');
+    router.push('/modal/new');
   };
 
   const handleViewAnnouncement = (announcementId: string) => {
-    router.push(`/announcements/${announcementId}`);
+    router.push(`/modal/${announcementId}`);
   };
 
   const handleEditAnnouncement = (announcementId: string) => {
-    router.push(`/announcements/${announcementId}/edit`);
+    router.push(`/modal/${announcementId}/edit`);
   };
 
   const handlePublishAnnouncement = (announcementId: string) => {
@@ -215,10 +215,10 @@ export default function AnnouncementsPage() {
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 4 }}>
         <Box>
           <Typography variant="h4" sx={{ fontWeight: 600, mb: 1 }}>
-            Announcements
+            Modal
           </Typography>
           <Typography variant="body1" color="text.secondary">
-            Manage your user announcements.
+            Manage your modal announcements.
           </Typography>
         </Box>
         <Button
@@ -245,17 +245,17 @@ export default function AnnouncementsPage() {
             }}
           >
             <Typography variant="h6" color="text.secondary">
-              No announcements found
+              No modal announcements found
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              Create your first announcement to get started.
+              Create your first modal announcement to get started.
             </Typography>
             <Button
               variant="contained"
               startIcon={<Image src="/illustrations/Notion-Icons/Regular/svg/ni-plus.svg" alt="Add" width={20} height={20} style={{ filter: 'brightness(0) invert(1)' }} />}
               onClick={handleCreateNew}
             >
-              Create Announcement
+              Create Modal
             </Button>
           </Box>
         ) : (
