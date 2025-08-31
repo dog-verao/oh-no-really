@@ -97,7 +97,7 @@ const TooltipAnnouncement: React.FC<TooltipProps> = ({
       <Box
         sx={{
           marginBottom: '16px',
-          color: '#666',
+          color: '#1a1a1a',
           textAlign: 'left',
           lineHeight: 1.6,
           '& p': {

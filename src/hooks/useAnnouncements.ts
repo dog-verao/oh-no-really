@@ -47,7 +47,6 @@ export interface UpdateAnnouncementData {
 
 export const getAllByAccountId = async (placement?: string): Promise<Announcement[]> => {
   const url = placement ? `/api/announcements?placement=${placement}` : '/api/announcements';
-  console.log('Fetching announcements with URL:', url);
   const response = await fetch(url);
 
   if (!response.ok) {
@@ -155,7 +154,6 @@ export const useAnnouncements = (accountId: string, placement?: string) => {
   const createMutation = useMutation({
     mutationFn: (data: CreateAnnouncementData) => createAnnouncement(data, accountId),
     onSuccess: () => {
-      console.log('Invalidating queries for placement:', placement);
       queryClient.invalidateQueries({ queryKey: ['announcements', accountId, placement] });
     },
   });
@@ -163,7 +161,6 @@ export const useAnnouncements = (accountId: string, placement?: string) => {
   const updateMutation = useMutation({
     mutationFn: (data: UpdateAnnouncementData) => updateAnnouncement(data, accountId),
     onSuccess: () => {
-      console.log('Invalidating queries for placement:', placement);
       queryClient.invalidateQueries({ queryKey: ['announcements', accountId, placement] });
     },
   });
@@ -171,7 +168,6 @@ export const useAnnouncements = (accountId: string, placement?: string) => {
   const deleteMutation = useMutation({
     mutationFn: (announcementId: string) => deleteAnnouncement(announcementId, accountId),
     onSuccess: () => {
-      console.log('Invalidating queries for placement:', placement);
       queryClient.invalidateQueries({ queryKey: ['announcements', accountId, placement] });
     },
   });
@@ -179,7 +175,6 @@ export const useAnnouncements = (accountId: string, placement?: string) => {
   const publishMutation = useMutation({
     mutationFn: (announcementId: string) => publishAnnouncement(announcementId, accountId),
     onSuccess: () => {
-      console.log('Invalidating queries for placement:', placement);
       queryClient.invalidateQueries({ queryKey: ['announcements', accountId, placement] });
     },
   });

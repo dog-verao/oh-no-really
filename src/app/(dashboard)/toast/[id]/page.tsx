@@ -35,6 +35,11 @@ function AnnouncementDetailContent() {
     router.push('/toast');
   };
 
+  const handleClose = () => {
+    // In preview mode, closing should go back to the list
+    router.push('/toast');
+  };
+
   if (isLoading) {
     return (
       <Box sx={{ p: 4, pl: 6, display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 400 }}>
@@ -69,6 +74,7 @@ function AnnouncementDetailContent() {
         onEdit={handleEdit}
         announcementId={announcementId}
         placement="toast"
+        onClose={handleClose}
       />
     </Box>
   );

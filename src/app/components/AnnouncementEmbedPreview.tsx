@@ -35,9 +35,10 @@ interface AnnouncementEmbedPreviewProps {
   buttons: Button[];
   themeConfig: ThemeConfig;
   placement?: 'modal' | 'toast' | 'tooltip';
+  onClose?: () => void;
 }
 
-export function AnnouncementEmbedPreview({ title, message, buttons, themeConfig, placement = 'modal' }: AnnouncementEmbedPreviewProps) {
+export function AnnouncementEmbedPreview({ title, message, buttons, themeConfig, placement = 'modal', onClose }: AnnouncementEmbedPreviewProps) {
 
 
   switch (placement) {
@@ -48,6 +49,7 @@ export function AnnouncementEmbedPreview({ title, message, buttons, themeConfig,
           message={message}
           buttons={buttons}
           themeConfig={themeConfig}
+          onClose={onClose}
         />
       );
     case 'tooltip':
@@ -57,6 +59,7 @@ export function AnnouncementEmbedPreview({ title, message, buttons, themeConfig,
           message={message}
           buttons={buttons}
           themeConfig={themeConfig}
+          onClose={onClose}
         />
       );
 
@@ -68,6 +71,7 @@ export function AnnouncementEmbedPreview({ title, message, buttons, themeConfig,
           message={message}
           buttons={buttons}
           themeConfig={themeConfig}
+          onClose={onClose}
         />
       );
   }

@@ -1,4 +1,4 @@
-import { Box } from "@mui/material";
+import { Box, IconButton } from "@mui/material";
 
 export interface ThemeConfig {
   modal: {
@@ -24,9 +24,22 @@ interface ModalAnnouncementProps {
   message: string;
   buttons: { label: string; type: 'primary' | 'secondary'; behavior: 'close' | 'redirect'; redirectUrl?: string }[];
   themeConfig: ThemeConfig;
+  onClose?: () => void;
 }
 
-export default function ModalAnnouncement({ title, message, buttons, themeConfig }: ModalAnnouncementProps) {
+export default function ModalAnnouncement({ title, message, buttons, themeConfig, onClose }: ModalAnnouncementProps) {
+
+  const handleClose = () => {
+    onClose?.();
+  };
+
+  const handleButtonClick = (button: { behavior: 'close' | 'redirect'; redirectUrl?: string }) => {
+    if (button.behavior === 'close') {
+      handleClose();
+    } else if (button.behavior === 'redirect' && button.redirectUrl) {
+      window.open(button.redirectUrl, '_blank');
+    }
+  };
 
   return (
     <Box sx={{
@@ -48,6 +61,24 @@ export default function ModalAnnouncement({ title, message, buttons, themeConfig
           position: 'relative',
         }}
       >
+        {/* Close button */}
+        <IconButton
+          onClick={handleClose}
+          sx={{
+            position: 'absolute',
+            top: '12px',
+            right: '12px',
+            width: 32,
+            height: 32,
+            color: '#666',
+            '&:hover': {
+              opacity: 0.8,
+            },
+          }}
+        >
+          ×
+        </IconButton>
+
         {/* Title */}
         <Box
           sx={{
@@ -56,6 +87,7 @@ export default function ModalAnnouncement({ title, message, buttons, themeConfig
             marginBottom: '8px',
             color: themeConfig.modal.titleColor,
             textAlign: 'center',
+            paddingRight: '32px', // Space for close button
           }}
         >
           {title}
@@ -140,6 +172,7 @@ export default function ModalAnnouncement({ title, message, buttons, themeConfig
                 <Box
                   key={index}
                   component="button"
+                  onClick={() => handleButtonClick(button)}
                   sx={buttonStyles}
                 >
                   {button.label}

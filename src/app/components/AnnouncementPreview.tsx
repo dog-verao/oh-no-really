@@ -23,14 +23,14 @@ export function AnnouncementPreview({ placement = 'modal' }: AnnouncementPreview
       titleColor: '#1a1a1a',
     },
     button: {
-      backgroundColor: '#007bff',
+      backgroundColor: '#1a1a1a',
       textColor: '#ffffff',
       borderRadius: '8px',
     },
     secondaryButton: {
-      backgroundColor: '#ffffff',
-      textColor: '#6c757d',
-      borderColor: '#6c757d',
+      backgroundColor: 'transparent',
+      textColor: '#1a1a1a',
+      borderColor: '#e0e0e0',
       borderRadius: '8px',
     },
   };

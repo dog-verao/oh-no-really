@@ -226,7 +226,7 @@ export default function AnnouncementsPage() {
           startIcon={<Image src="/illustrations/Notion-Icons/Regular/svg/ni-plus.svg" alt="Add" width={20} height={20} />}
           onClick={handleCreateNew}
         >
-          Create Announcement
+          Create Modal
         </Button>
       </Box>
 

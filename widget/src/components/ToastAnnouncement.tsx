@@ -7,13 +7,15 @@ interface ToastAnnouncementProps {
   message: string;
   buttons: { label: string; type: 'primary' | 'secondary'; behavior: 'close' | 'redirect'; redirectUrl?: string }[];
   themeConfig: ThemeConfig;
+  onClose?: () => void;
 }
 
-const ToastAnnouncement = ({ title, message, buttons, themeConfig }: ToastAnnouncementProps) => {
+const ToastAnnouncement = ({ title, message, buttons, themeConfig, onClose }: ToastAnnouncementProps) => {
   const [toastOpen, setToastOpen] = useState(true);
 
   const handleToastClose = () => {
     setToastOpen(false);
+    onClose?.();
   };
 
   const handleButtonClick = (button: { behavior: 'close' | 'redirect'; redirectUrl?: string }) => {
@@ -22,6 +24,7 @@ const ToastAnnouncement = ({ title, message, buttons, themeConfig }: ToastAnnoun
     }
     if (button.behavior === 'close') {
       setToastOpen(false);
+      onClose?.();
     }
   };
 
@@ -107,31 +110,40 @@ const ToastAnnouncement = ({ title, message, buttons, themeConfig }: ToastAnnoun
                   );
                 })}
               </Box>
-            ) : null
+            ) : undefined
           }
         >
           <Box>
+            {/* Title */}
             <Box
               sx={{
                 fontWeight: 600,
                 fontSize: '14px',
-                marginBottom: '4px',
+                marginBottom: '6px',
                 color: themeConfig.modal.titleColor,
               }}
             >
               {title}
             </Box>
+
+            {/* Message */}
             <Box
               sx={{
-                fontSize: '12px',
                 color: '#666',
+                fontSize: '13px',
                 lineHeight: 1.4,
                 '& p': {
                   margin: 0,
-                  marginBottom: '4px',
+                  marginBottom: '6px',
                 },
                 '& p:last-child': {
                   marginBottom: 0,
+                },
+                '& img': {
+                  maxWidth: '100%',
+                  height: 'auto',
+                  display: 'block',
+                  margin: '0 auto',
                 },
               }}
               dangerouslySetInnerHTML={{ __html: message }}

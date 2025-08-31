@@ -49,7 +49,6 @@ export function AnnouncementForm({
 
   // Initialize form data with the fixed placement
   useEffect(() => {
-    console.log('Setting placement in form data:', placement);
     updateFormData({ placement });
   }, [placement, updateFormData]);
 

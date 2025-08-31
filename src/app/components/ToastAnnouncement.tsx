@@ -8,13 +8,24 @@ interface ToastAnnouncementProps {
   message: string;
   buttons: { label: string; type: 'primary' | 'secondary'; behavior: 'close' | 'redirect'; redirectUrl?: string }[];
   themeConfig: ThemeConfig;
+  onClose?: () => void;
 }
 
 
-const ToastAnnouncement = ({ title, message, buttons, themeConfig }: ToastAnnouncementProps) => {
+const ToastAnnouncement = ({ title, message, buttons, themeConfig, onClose }: ToastAnnouncementProps) => {
   const [toastOpen, setToastOpen] = useState(false);
+
   const handleToastClose = () => {
     setToastOpen(false);
+    onClose?.();
+  };
+
+  const handleButtonClick = (button: { behavior: 'close' | 'redirect'; redirectUrl?: string }) => {
+    if (button.behavior === 'close') {
+      handleToastClose();
+    } else if (button.behavior === 'redirect' && button.redirectUrl) {
+      window.open(button.redirectUrl, '_blank');
+    }
   };
 
   return (
@@ -110,7 +121,7 @@ const ToastAnnouncement = ({ title, message, buttons, themeConfig }: ToastAnnoun
                     <Box
                       key={index}
                       component="button"
-                      onClick={button.behavior === 'close' ? handleToastClose : undefined}
+                      onClick={() => handleButtonClick(button)}
                       sx={buttonStyles}
                     >
                       {button.label}

@@ -44,6 +44,7 @@ interface AnnouncementsWidgetProps {
 
 function AnnouncementsWidget({ accountId, baseUrl = '' }: AnnouncementsWidgetProps) {
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [closedAnnouncements, setClosedAnnouncements] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -68,6 +69,10 @@ function AnnouncementsWidget({ accountId, baseUrl = '' }: AnnouncementsWidgetPro
     fetchAnnouncements();
   }, [accountId, baseUrl]);
 
+  const handleClose = (announcementId: string) => {
+    setClosedAnnouncements(prev => new Set([...prev, announcementId]));
+  };
+
   if (loading) {
     return null; // Don't show anything while loading
   }
@@ -79,6 +84,15 @@ function AnnouncementsWidget({ accountId, baseUrl = '' }: AnnouncementsWidgetPro
 
   if (announcements.length === 0) {
     return null; // Don't show anything if no announcements
+  }
+
+  // Filter out closed announcements
+  const visibleAnnouncements = announcements.filter(announcement =>
+    !closedAnnouncements.has(announcement.id)
+  );
+
+  if (visibleAnnouncements.length === 0) {
+    return null; // Don't show anything if all announcements are closed
   }
 
   // Create a minimal theme for the widget
@@ -98,13 +112,14 @@ function AnnouncementsWidget({ accountId, baseUrl = '' }: AnnouncementsWidgetPro
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      {announcements.map((announcement) => {
+      {visibleAnnouncements.map((announcement) => {
         const commonProps = {
           key: announcement.id,
           title: announcement.title,
           message: announcement.message,
           buttons: announcement.buttons || [],
           themeConfig: announcement.themeConfig,
+          onClose: () => handleClose(announcement.id),
         };
 
         switch (announcement.placement) {

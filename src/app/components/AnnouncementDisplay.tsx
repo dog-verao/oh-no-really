@@ -16,19 +16,26 @@ interface AnnouncementDisplayProps {
   onEdit?: () => void;
   announcementId?: string;
   placement?: 'modal' | 'toast' | 'tooltip';
+  onClose?: () => void;
 }
 
-export function AnnouncementDisplay({ onBack, onEdit, announcementId, placement = 'modal' }: AnnouncementDisplayProps) {
-  const { formData, theme } = useAnnouncements();
+export function AnnouncementDisplay({ onBack, onEdit, announcementId, placement = 'modal', onClose }: AnnouncementDisplayProps) {
   const { account } = useCurrentAccount();
-  const { publishAnnouncement, isPublishing, getAnnouncementById } = useAnnouncementsHook(account?.id || '');
+  const { announcements, isLoading, error, publishAnnouncement, isPublishing, getAnnouncementById } = useAnnouncementsHook(account?.id || '', placement);
   const [announcement, setAnnouncement] = useState<Announcement | null>(null);
 
   useEffect(() => {
-    if (announcementId && account?.id) {
-      getAnnouncementById(announcementId).then(setAnnouncement);
+    if (announcementId) {
+      // First try to find in the announcements list
+      const foundAnnouncement = announcements.find(ann => ann.id === announcementId);
+      if (foundAnnouncement) {
+        setAnnouncement(foundAnnouncement);
+      } else {
+        // If not found, fetch individually
+        getAnnouncementById(announcementId).then(setAnnouncement);
+      }
     }
-  }, [announcementId, account?.id, getAnnouncementById]);
+  }, [announcementId, announcements, getAnnouncementById]);
 
   const handlePublish = () => {
     if (announcementId) {
@@ -36,12 +43,47 @@ export function AnnouncementDisplay({ onBack, onEdit, announcementId, placement 
     }
   };
 
-  // Use theme config or fallback to default
-  const config = theme?.config || {
+  const handleClose = () => {
+    onClose?.();
+  };
+
+  if (isLoading) {
+    return (
+      <Box sx={{
+        height: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      }}>
+        <Box sx={{ color: 'white', textAlign: 'center' }}>
+          Loading...
+        </Box>
+      </Box>
+    );
+  }
+
+  if (error || !announcement) {
+    return (
+      <Box sx={{
+        height: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      }}>
+        <Box sx={{ color: 'white', textAlign: 'center' }}>
+          {error?.message || 'Announcement not found'}
+        </Box>
+      </Box>
+    );
+  }
+
+  const config = {
     modal: {
       backgroundColor: '#ffffff',
-      borderRadius: '12px',
       titleColor: '#1a1a1a',
+      borderRadius: '12px',
     },
     button: {
       backgroundColor: '#007bff',
@@ -49,9 +91,9 @@ export function AnnouncementDisplay({ onBack, onEdit, announcementId, placement 
       borderRadius: '8px',
     },
     secondaryButton: {
-      backgroundColor: '#ffffff',
-      textColor: '#6c757d',
-      borderColor: '#6c757d',
+      backgroundColor: 'transparent',
+      textColor: '#1a1a1a',
+      borderColor: '#e0e0e0',
       borderRadius: '8px',
     },
   };
@@ -135,11 +177,12 @@ export function AnnouncementDisplay({ onBack, onEdit, announcementId, placement 
       )}
 
       <AnnouncementEmbedPreview
-        title={formData.title || 'Announcement Title'}
-        message={formData.content || 'Announcement content will appear here...'}
-        buttons={formData.buttons}
+        title={announcement.title || 'Announcement Title'}
+        message={announcement.message || 'Announcement content will appear here...'}
+        buttons={announcement.buttons || []}
         themeConfig={config}
         placement={placement}
+        onClose={handleClose}
       />
     </Box>
   );

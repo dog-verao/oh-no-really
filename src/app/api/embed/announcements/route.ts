@@ -98,19 +98,19 @@ export async function GET(request: NextRequest) {
       themeConfig: announcement.theme?.config || {
         modal: {
           backgroundColor: '#ffffff',
-          borderRadius: '8px',
-          titleColor: '#000000'
+          borderRadius: '12px',
+          titleColor: '#1a1a1a'
         },
         button: {
-          backgroundColor: '#1976d2',
+          backgroundColor: '#1a1a1a',
           textColor: '#ffffff',
-          borderRadius: '4px'
+          borderRadius: '8px'
         },
         secondaryButton: {
           backgroundColor: 'transparent',
-          textColor: '#1976d2',
-          borderColor: '#1976d2',
-          borderRadius: '4px'
+          textColor: '#1a1a1a',
+          borderColor: '#e0e0e0',
+          borderRadius: '8px'
         }
       }
     }));

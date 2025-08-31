@@ -57,14 +57,14 @@ const defaultTheme: Theme = {
       titleColor: '#1a1a1a',
     },
     button: {
-      backgroundColor: '#007bff',
+      backgroundColor: '#1a1a1a',
       textColor: '#ffffff',
       borderRadius: '8px',
     },
     secondaryButton: {
-      backgroundColor: '#ffffff',
-      textColor: '#6c757d',
-      borderColor: '#6c757d',
+      backgroundColor: 'transparent',
+      textColor: '#1a1a1a',
+      borderColor: '#e0e0e0',
       borderRadius: '8px',
     },
   },
@@ -78,7 +78,7 @@ const defaultFormData: AnnouncementFormData = {
   content: '',
   themeId: null,
   placement: 'modal', // This will be overridden by the placement prop in each form
-  buttons: [{ label: 'Got it', type: 'primary', behavior: 'close' }],
+  buttons: [{ label: 'Continue', type: 'primary', behavior: 'close' }],
 };
 
 interface AnnouncementsProviderProps {

@@ -6,8 +6,6 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
-    console.log('API: Creating announcement with placement:', body.placement);
-
     // Get the authenticated user and their account
     const supabase = await createServerSupabaseClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -44,8 +42,6 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    console.log('API: Created announcement with placement:', announcement.placement);
-
     return NextResponse.json(announcement);
   } catch (error) {
     console.error('Error creating announcement:', error);
@@ -60,8 +56,6 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const placement = searchParams.get('placement');
-
-    console.log('API: Received placement filter:', placement);
 
     // Get the authenticated user and their account
     const supabase = await createServerSupabaseClient();
@@ -98,8 +92,6 @@ export async function GET(req: NextRequest) {
       whereClause.placement = placement;
     }
 
-    console.log('API: Where clause:', whereClause);
-
     const announcements = await prisma.announcement.findMany({
       where: whereClause,
       include: {
@@ -109,8 +101,6 @@ export async function GET(req: NextRequest) {
         createdAt: 'desc',
       },
     });
-
-    console.log('API: Found announcements:', announcements.length, 'with placements:', announcements.map(a => a.placement));
 
     return NextResponse.json(announcements);
   } catch (error) {

@@ -30,6 +30,7 @@ interface ServerAnnouncementRendererProps {
     };
   };
   placement: 'modal' | 'toast' | 'tooltip';
+  onClose?: () => void;
 }
 
 export default function ServerAnnouncementRenderer({
@@ -38,6 +39,7 @@ export default function ServerAnnouncementRenderer({
   buttons,
   themeConfig,
   placement,
+  onClose,
 }: ServerAnnouncementRendererProps) {
   // Sort buttons: secondary first, primary last (rightmost)
   const sortedButtons = buttons.sort((a, b) => {
@@ -45,6 +47,18 @@ export default function ServerAnnouncementRenderer({
     if (a.type !== 'primary' && b.type === 'primary') return -1;
     return 0;
   });
+
+  const handleClose = () => {
+    onClose?.();
+  };
+
+  const handleButtonClick = (button: { behavior: 'close' | 'redirect'; redirectUrl?: string }) => {
+    if (button.behavior === 'close') {
+      handleClose();
+    } else if (button.behavior === 'redirect' && button.redirectUrl) {
+      window.open(button.redirectUrl, '_blank');
+    }
+  };
 
   const renderContent = () => (
     <Box
@@ -61,7 +75,7 @@ export default function ServerAnnouncementRenderer({
     >
       {/* Close button */}
       <IconButton
-        data-action="close"
+        onClick={handleClose}
         sx={{
           position: 'absolute',
           top: '12px',
@@ -173,7 +187,7 @@ export default function ServerAnnouncementRenderer({
               <Box
                 key={index}
                 component="button"
-                data-action="close"
+                onClick={() => handleButtonClick(button)}
                 sx={buttonStyles}
               >
                 {button.label}
@@ -203,7 +217,7 @@ export default function ServerAnnouncementRenderer({
           >
             {/* Close button */}
             <IconButton
-              data-action="close"
+              onClick={handleClose}
               sx={{
                 position: 'absolute',
                 top: '8px',
@@ -261,7 +275,7 @@ export default function ServerAnnouncementRenderer({
                 <Box
                   sx={{
                     display: 'flex',
-                    gap: '8px',
+                    gap: '6px',
                     flexWrap: 'wrap',
                     justifyContent: 'flex-end',
                     marginTop: '12px',
@@ -315,7 +329,7 @@ export default function ServerAnnouncementRenderer({
                       <Box
                         key={index}
                         component="button"
-                        data-action="close"
+                        onClick={() => handleButtonClick(button)}
                         sx={buttonStyles}
                       >
                         {button.label}
@@ -331,30 +345,29 @@ export default function ServerAnnouncementRenderer({
 
     case 'tooltip':
       return (
-        <Box sx={{ position: 'fixed', bottom: '20px', right: '20px', zIndex: 2147483000 }}>
-          {/* Tooltip content */}
+        <Box sx={{ position: 'relative', minHeight: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <Box
-            className="notifications-fyi-tooltip-content"
             sx={{
-              backgroundColor: themeConfig.modal.backgroundColor,
+              background: themeConfig.modal.backgroundColor,
               borderRadius: themeConfig.modal.borderRadius,
-              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-              padding: '16px',
-              maxWidth: '350px',
-              marginBottom: '8px',
-              display: 'none',
+              boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
+              padding: '24px',
+              maxWidth: '400px',
+              maxHeight: '500px',
+              overflow: 'auto',
+              position: 'relative',
             }}
           >
             {/* Close button */}
             <IconButton
-              data-action="close"
+              onClick={handleClose}
               sx={{
                 position: 'absolute',
                 top: '8px',
                 right: '8px',
                 width: 24,
                 height: 24,
-                color: '#999',
+                color: '#666',
                 '&:hover': {
                   opacity: 0.8,
                 },
@@ -363,29 +376,28 @@ export default function ServerAnnouncementRenderer({
               ×
             </IconButton>
 
-            {/* Title */}
             <Box
               sx={{
                 fontWeight: 600,
-                fontSize: '14px',
-                marginBottom: '8px',
+                fontSize: '16px',
+                marginBottom: '12px',
                 color: themeConfig.modal.titleColor,
-                paddingRight: '24px', // Space for close button
+                textAlign: 'center',
+                paddingRight: '32px', // Space for close button
               }}
             >
               {title}
             </Box>
 
-            {/* Message */}
             <Box
               sx={{
                 marginBottom: '16px',
                 color: '#666',
-                fontSize: '13px',
-                lineHeight: 1.4,
+                textAlign: 'left',
+                lineHeight: 1.6,
                 '& p': {
                   margin: 0,
-                  marginBottom: '6px',
+                  marginBottom: '8px',
                 },
                 '& p:last-child': {
                   marginBottom: 0,
@@ -400,7 +412,6 @@ export default function ServerAnnouncementRenderer({
               dangerouslySetInnerHTML={{ __html: message }}
             />
 
-            {/* Buttons */}
             {sortedButtons.length > 0 && (
               <Box
                 sx={{
@@ -413,12 +424,12 @@ export default function ServerAnnouncementRenderer({
                 {sortedButtons.map((button, index) => {
                   const isPrimary = button.type === 'primary';
                   const buttonStyles = {
-                    padding: '6px 12px',
+                    padding: '8px 16px',
                     border: isPrimary ? 'none' : `1px solid ${themeConfig.secondaryButton.borderColor}`,
                     borderRadius: isPrimary
                       ? themeConfig.button.borderRadius
                       : themeConfig.secondaryButton.borderRadius,
-                    fontSize: '12px',
+                    fontSize: '14px',
                     fontWeight: 500,
                     cursor: 'pointer',
                     textDecoration: 'none',
@@ -458,7 +469,7 @@ export default function ServerAnnouncementRenderer({
                     <Box
                       key={index}
                       component="button"
-                      data-action="close"
+                      onClick={() => handleButtonClick(button)}
                       sx={buttonStyles}
                     >
                       {button.label}
