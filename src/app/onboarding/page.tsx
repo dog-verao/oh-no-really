@@ -12,10 +12,13 @@ import {
   IconButton,
   List,
   ListItem,
+  ListItemText,
+  ListItemSecondaryAction,
   Divider,
   CircularProgress,
   Alert,
   Snackbar,
+  InputAdornment,
 } from '@mui/material';
 import {
   PlayArrow,
@@ -39,9 +42,10 @@ interface CapturedElement {
   timestamp: number;
 }
 
-export default function InspectorPage() {
+export default function OnboardingPage() {
   const router = useRouter();
   const [url, setUrl] = useState('');
+  const [currentUrl, setCurrentUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isInspectMode, setIsInspectMode] = useState(false);
   const [capturedElements, setCapturedElements] = useState<CapturedElement[]>([]);
@@ -52,6 +56,7 @@ export default function InspectorPage() {
     message: '',
     severity: 'success',
   });
+  const [infoSnackbar, setInfoSnackbar] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   const showSnackbar = (message: string, severity: 'success' | 'error' = 'success') => {
@@ -60,6 +65,14 @@ export default function InspectorPage() {
 
   const closeSnackbar = () => {
     setSnackbar(prev => ({ ...prev, open: false }));
+  };
+
+  const showInfoSnackbar = () => {
+    setInfoSnackbar(true);
+  };
+
+  const closeInfoSnackbar = () => {
+    setInfoSnackbar(false);
   };
 
   // Listen for messages from iframe
@@ -109,6 +122,7 @@ export default function InspectorPage() {
     }
 
     setIsLoading(true);
+    setCurrentUrl(url);
     const iframe = iframeRef.current;
     if (iframe) {
       // Clear any existing content
@@ -194,56 +208,18 @@ export default function InspectorPage() {
     <Box sx={{ display: 'flex', height: '100vh', bgcolor: 'grey.50' }}>
       {/* Main Content */}
       <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-        {/* Header */}
-        <Box sx={{ bgcolor: 'white', borderBottom: 1, borderColor: 'grey.200', p: 2 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <Button
-                onClick={() => router.back()}
-                startIcon={<ArrowBack />}
-                variant="outlined"
-                size="small"
-              >
-                Back
-              </Button>
-              <Typography variant="h5" sx={{ fontWeight: 600 }}>
-                Element Inspector
-              </Typography>
-              <Chip
-                label={isInspectMode ? "Inspect Mode Active" : "Ready"}
-                color={isInspectMode ? "error" : "default"}
-                size="small"
-              />
-            </Box>
+        {/* Header - Single Row */}
+        <Box sx={{ bgcolor: 'white', borderBottom: 1, borderColor: 'grey.200', p: 2, height: 72, display: 'flex', alignItems: 'center' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '100%' }}>
+            {/* Back Button */}
+            <IconButton
+              onClick={() => router.back()}
+              size="small"
+            >
+              <img src="/illustrations/Notion-Icons/Regular/svg/ni-arrow-left.svg" alt="Back" style={{ width: 20, height: 20 }} />
+            </IconButton>
 
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              <Button
-                onClick={toggleInspectMode}
-                disabled={!url.trim()}
-                variant={isInspectMode ? "contained" : "outlined"}
-                color={isInspectMode ? "error" : "primary"}
-                size="small"
-                startIcon={isInspectMode ? <Stop /> : <Visibility />}
-              >
-                {isInspectMode ? "Stop Inspecting" : "Start Inspecting"}
-              </Button>
-
-              <Button
-                onClick={saveToBackend}
-                disabled={capturedElements.length === 0}
-                variant="contained"
-                size="small"
-                startIcon={<Save />}
-              >
-                Save Selectors
-              </Button>
-            </Box>
-          </Box>
-        </Box>
-
-        {/* URL Input */}
-        <Box sx={{ bgcolor: 'white', borderBottom: 1, borderColor: 'grey.200', p: 2 }}>
-          <Box sx={{ display: 'flex', gap: 1 }}>
+            {/* URL Input */}
             <TextField
               type="url"
               placeholder="Enter site URL (e.g., https://example.com)"
@@ -253,31 +229,34 @@ export default function InspectorPage() {
               sx={{ flex: 1 }}
               size="small"
             />
+
+            {/* Load Site Button */}
             <Button
               onClick={loadSite}
               disabled={!url.trim() || isLoading}
               variant="contained"
+              size="small"
               startIcon={isLoading ? <CircularProgress size={16} /> : <PlayArrow />}
             >
               {isLoading ? "Loading..." : "Load Site"}
             </Button>
-          </Box>
-        </Box>
 
-        {/* Instructions */}
-        <Box sx={{ bgcolor: 'blue.50', borderBottom: 1, borderColor: 'blue.200', p: 2 }}>
-          <Typography variant="body2" color="blue.700">
-            <strong>How to use:</strong> Load a site that has the announcements widget installed.
-            The widget will handle element selection and send the data back to this inspector.
-          </Typography>
+            {/* Info Button */}
+            <IconButton
+              onClick={showInfoSnackbar}
+              size="small"
+            >
+              <img src="/illustrations/Notion-Icons/Regular/svg/ni-info.svg" alt="Info" style={{ width: 20, height: 20 }} />
+            </IconButton>
+          </Box>
         </Box>
 
         {/* Iframe Container */}
         <Box sx={{ flex: 1, position: 'relative' }}>
-          {url ? (
+          {currentUrl ? (
             <iframe
               ref={iframeRef}
-              src={url}
+              src={currentUrl}
               style={{ width: '100%', height: '100%', border: 'none' }}
               sandbox="allow-scripts allow-forms allow-popups allow-modals"
               onLoad={() => {
@@ -302,15 +281,40 @@ export default function InspectorPage() {
 
       {/* Sidebar */}
       <Box sx={{ width: 320, bgcolor: 'white', borderLeft: 1, borderColor: 'grey.200', display: 'flex', flexDirection: 'column' }}>
-        <Box sx={{ p: 2, borderBottom: 1, borderColor: 'grey.200' }}>
-          <Typography variant="h6" sx={{ fontWeight: 600 }}>
-            Captured Elements
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            {capturedElements.length} element{capturedElements.length !== 1 ? 's' : ''} captured
-          </Typography>
+        <Box sx={{ p: 2, borderBottom: 1, borderColor: 'grey.200', height: 72, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          {/* Start Inspecting Button */}
+          <Button
+            onClick={toggleInspectMode}
+            disabled={!url.trim()}
+            variant={isInspectMode ? "contained" : "outlined"}
+            color={isInspectMode ? "error" : "primary"}
+            fullWidth
+            startIcon={<img src="/illustrations/Notion-Icons/Regular/svg/ni-code-slash.svg" alt="Inspect" style={{ width: 16, height: 16 }} />}
+          >
+            {isInspectMode ? "Stop Inspecting" : "Start Inspecting"}
+          </Button>
         </Box>
 
+        {/* Save Button (only when elements exist) */}
+        {capturedElements.length > 0 && (
+          <>
+            <Box sx={{ p: 2 }}>
+              <Button
+                onClick={saveToBackend}
+                variant="contained"
+                color="primary"
+                fullWidth
+                startIcon={<Save />}
+                sx={{ bgcolor: 'black', '&:hover': { bgcolor: 'grey.800' } }}
+              >
+                Save Selectors
+              </Button>
+            </Box>
+            <Divider />
+          </>
+        )}
+
+        {/* Elements List */}
         <Box sx={{ flex: 1, overflow: 'auto', p: 2 }}>
           {capturedElements.length === 0 ? (
             <Box sx={{ textAlign: 'center', py: 4 }}>
@@ -414,6 +418,18 @@ export default function InspectorPage() {
       >
         <Alert onClose={closeSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
           {snackbar.message}
+        </Alert>
+      </Snackbar>
+
+      {/* Info Snackbar */}
+      <Snackbar
+        open={infoSnackbar}
+        autoHideDuration={5000}
+        onClose={closeInfoSnackbar}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert onClose={closeInfoSnackbar} severity="info" sx={{ width: '100%' }}>
+          How to use: Load a site that has the announcements widget installed. The widget will handle element selection and send the data back to this inspector.
         </Alert>
       </Snackbar>
     </Box>

@@ -352,7 +352,6 @@ function stopInspectMode(): void {
   window.parent.postMessage({ type: 'HIGHLIGHT_STOPPED' }, '*');
 }
 
-// Listen for messages from parent (inspector page)
 window.addEventListener('message', (event) => {
   console.log('Widget received message:', event.data);
   if (event.data.type === 'START_INSPECT') {

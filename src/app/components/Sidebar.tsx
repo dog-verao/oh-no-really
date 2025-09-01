@@ -20,8 +20,8 @@ import Image from 'next/image';
 interface SidebarProps {
   open: boolean;
   onClose?: () => void;
-  activeItem?: 'modal' | 'tooltip' | 'toast' | 'themes' | 'settings' | 'inspector';
-  onItemClick?: (item: 'modal' | 'tooltip' | 'toast' | 'themes' | 'settings' | 'inspector') => void;
+  activeItem?: 'modal' | 'tooltip' | 'toast' | 'themes' | 'settings' | 'onboarding';
+  onItemClick?: (item: 'modal' | 'tooltip' | 'toast' | 'themes' | 'settings' | 'onboarding') => void;
   collapsed?: boolean;
   onToggleCollapse?: () => void;
 }
@@ -59,9 +59,9 @@ export const Sidebar = ({
       icon: <Image src="/illustrations/Notion-Icons/Regular/svg/ni-layout-column.svg" alt="Themes" width={20} height={20} />,
     },
     {
-      id: 'inspector' as const,
-      label: 'Element Inspector',
-      icon: <Image src="/illustrations/Notion-Icons/Regular/svg/ni-eye.svg" alt="Inspector" width={20} height={20} />,
+      id: 'onboarding' as const,
+      label: 'Onboarding',
+      icon: <Image src="/illustrations/Notion-Icons/Regular/svg/ni-code-slash.svg" alt="onboarding" width={20} height={20} />,
     },
     {
       id: 'settings' as const,
@@ -70,7 +70,7 @@ export const Sidebar = ({
     },
   ];
 
-  const handleItemClick = (itemId: 'modal' | 'tooltip' | 'toast' | 'themes' | 'settings' | 'inspector') => {
+  const handleItemClick = (itemId: 'modal' | 'tooltip' | 'toast' | 'themes' | 'settings' | 'onboarding') => {
     onItemClick?.(itemId);
   };
 
