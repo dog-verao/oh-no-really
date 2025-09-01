@@ -19,6 +19,7 @@ import {
   Alert,
   Snackbar,
   InputAdornment,
+  AlertTitle,
 } from '@mui/material';
 import {
   PlayArrow,
@@ -429,7 +430,8 @@ export default function OnboardingPage() {
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       >
         <Alert onClose={closeInfoSnackbar} severity="info" sx={{ width: '100%' }}>
-          How to use: Load a site that has the announcements widget installed. The widget will handle element selection and send the data back to this inspector.
+          <AlertTitle sx={{ fontWeight: 600 }}>How to use:</AlertTitle>
+          Load a site that has the announcements widget installed. The widget will handle element selection and send the data back to this inspector.
         </Alert>
       </Snackbar>
     </Box>
