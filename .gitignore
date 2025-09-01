@@ -45,3 +45,7 @@ next-env.d.ts
 /widget/node_modules
 /widget/dist
 /widget/public
+
+/extension/node_modules
+/extension/dist
+/extension/public

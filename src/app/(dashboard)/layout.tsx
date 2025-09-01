@@ -22,10 +22,11 @@ export default function DashboardLayout({
     if (pathname.includes('/toast')) return 'toast';
     if (pathname.includes('/themes')) return 'themes';
     if (pathname.includes('/settings')) return 'settings';
+    if (pathname.includes('/inspector')) return 'inspector';
     return 'modal';
   };
 
-  const handleNavigation = (item: 'modal' | 'tooltip' | 'toast' | 'themes' | 'settings') => {
+  const handleNavigation = (item: 'modal' | 'tooltip' | 'toast' | 'themes' | 'settings' | 'inspector') => {
     if (item === 'tooltip') {
       router.push('/tooltip');
     } else if (item === 'toast') {
@@ -34,6 +35,8 @@ export default function DashboardLayout({
       router.push('/themes');
     } else if (item === 'settings') {
       router.push('/settings');
+    } else if (item === 'inspector') {
+      router.push('/inspector');
     } else {
       router.push('/modal');
     }
