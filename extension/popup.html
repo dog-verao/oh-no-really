@@ -184,11 +184,15 @@
     <button class="button button-secondary" id="stopBtn" disabled>Stop Selection</button>
 
     <div class="captured-elements">
-      <h3>Captured Elements</h3>
+      <h3>Captured Element</h3>
       <div class="element-list" id="elementList">
         <div class="empty-state">
-          No elements captured yet
+          No element captured yet
         </div>
+      </div>
+      <div style="margin-top: 8px;">
+        <button id="refreshBtn"
+          style="background: #6c757d; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 11px; cursor: pointer; width: 100%;">Refresh</button>
       </div>
     </div>
 
@@ -196,8 +200,8 @@
       <h4>How to use:</h4>
       <p>1. Click "Start Element Selection" to begin<br>
         2. Hover over elements on the page to highlight them<br>
-        3. Click on an element to capture its selector<br>
-        4. Click "Stop Selection" when finished</p>
+        3. Click once to close the extension, and then click again to select an element to capture its selector<br>
+        4. Selection automatically stops after capturing one element</p>
     </div>
   </div>
 

@@ -142,11 +142,11 @@ function initializeAnnouncementsWidget(accountId: string, baseUrl?: string) {
   const container = document.createElement('div');
   container.id = 'announcements-widget-container';
   container.style.position = 'fixed';
-  container.style.top = '0';
-  container.style.left = '0';
-  container.style.width = '100%';
-  container.style.height = '100%';
-  container.style.zIndex = '9999';
+  container.style.top = '30px';
+  container.style.left = '50%';
+  container.style.transform = 'translateX(-50%)';
+  // container.style.width = '100%';
+  // container.style.height = '100%';
 
   document.body.appendChild(container);
 

@@ -1,137 +1,127 @@
 # Onboarding Builder Extension
 
-A Chrome extension that allows you to select elements on any webpage to create onboarding flows for your application.
+A Chrome extension for selecting and capturing DOM elements to create onboarding flows. This extension allows you to highlight and capture elements on any webpage, generating unique CSS selectors for each element.
 
 ## Features
 
-- **Element Selection**: Click on any element to capture its CSS selector
-- **Smart Selector Generation**: Automatically generates unique and reliable CSS selectors
-- **Visual Feedback**: See highlighted elements and capture confirmations
-- **Element Management**: View, copy, and remove captured elements
-- **Keyboard Shortcuts**: Press ESC to stop selection mode
+- **Element Highlighting**: Hover over any element to see it highlighted with a blue border
+- **Element Selection**: Click on elements to capture their selectors
+- **Unique Selector Generation**: Automatically generates unique CSS selectors for captured elements
+- **Element Testing**: Test captured selectors to verify they work on the current page
+- **Export Functionality**: Export captured elements as JSON
+- **Cross-page Compatibility**: Works on any webpage, even without your widget script
+
+## Recent Fixes
+
+### Fixed Issues:
+1. **Click Selection**: Fixed the click handling to properly capture elements when clicked
+2. **Overlay Interaction**: Improved the overlay system to prevent interference with element selection
+3. **Element Detection**: Enhanced element detection to exclude UI elements from the extension itself
+4. **Duplicate Prevention**: Added checks to prevent capturing the same element multiple times
+5. **Better Feedback**: Improved visual feedback and user notifications
+6. **Selector Specificity**: Fixed selector generation to create unique, specific selectors for similar elements
+
+### Key Improvements:
+- **Transparent Overlay**: Changed overlay to transparent with `pointer-events: auto` for better click handling
+- **Crosshair Cursor**: Added crosshair cursor to indicate selection mode
+- **Element Validation**: Added duplicate detection and better element validation
+- **Test Functionality**: Added ability to test captured selectors on the current page
+- **Export/Import**: Added JSON export functionality for captured elements
+- **Smart Selector Generation**: Improved selector algorithm to handle similar elements (like cards in a grid)
+- **Selector Validation**: Added automatic validation to ensure selectors work correctly
+- **Better nth-child Logic**: Uses nth-of-type for better specificity when dealing with similar elements
 
 ## Installation
 
-### Development Mode
-
-1. Open Chrome and navigate to `chrome://extensions/`
-2. Enable "Developer mode" in the top right corner
+1. Open Chrome and go to `chrome://extensions/`
+2. Enable "Developer mode" in the top right
 3. Click "Load unpacked" and select the `extension` folder
-4. The extension should now appear in your extensions list
-
-### Production Installation
-
-1. Package the extension (instructions below)
-2. Drag and drop the `.crx` file into Chrome's extensions page
-3. Or publish to the Chrome Web Store
+4. The extension icon should appear in your toolbar
 
 ## Usage
 
 1. **Start Selection**: Click the extension icon and press "Start Element Selection"
-2. **Select Elements**: Hover over elements to highlight them, then click to capture
-3. **View Results**: Captured elements appear in the popup with their selectors
-4. **Copy Selectors**: Click "Copy" to copy a selector to your clipboard
-5. **Stop Selection**: Press "Stop Selection" or ESC key
+2. **Highlight Elements**: Hover over elements on the page to see them highlighted
+3. **Capture Elements**: Click on elements to capture their selectors
+4. **Test Selectors**: Use the "Test" button to verify selectors work on the current page
+5. **Export Data**: Use "Export JSON" to save captured elements
+6. **Stop Selection**: Press "Stop Selection" or ESC key to end selection mode
 
-## How It Works
+## Testing
 
-### Selector Generation
+Use the included test files to test the extension functionality:
 
-The extension uses a smart algorithm to generate unique CSS selectors:
+- **`test.html`**: General test page with various elements and attributes
+- **`test-cards.html`**: Specific test for card grid layouts and similar elements
 
-1. **ID-based**: If an element has an ID, uses `#id`
-2. **Data attributes**: Uses `[data-attribute="value"]` selectors
-3. **Class-based**: Uses unique class combinations
-4. **Path-based**: Falls back to DOM path with nth-child selectors
-
-### Communication Flow
-
-1. **Popup** → **Background Script**: User clicks start/stop buttons
-2. **Background Script** → **Content Script**: Injects functions to enable/disable overlay
-3. **Content Script** → **Popup**: Sends captured element data
-4. **Storage**: Elements are saved locally using Chrome's storage API
+The `test-cards.html` file is particularly useful for testing the improved selector generation with multiple similar elements (like product cards in a grid).
 
 ## File Structure
 
 ```
 extension/
 ├── manifest.json          # Extension configuration
-├── background.js          # Service worker for communication
-├── content.js            # Injected into web pages
+├── background.js          # Background service worker
+├── content.js            # Content script for element interaction
 ├── popup.html            # Extension popup interface
 ├── popup.js              # Popup functionality
-├── overlay.css           # Additional styles
-└── README.md            # This file
+├── overlay.css           # Styles for overlay elements
+├── test.html             # Test page for extension
+└── README.md             # This file
 ```
+
+## Selector Generation Strategy
+
+The extension uses a multi-tier approach to generate unique selectors:
+
+1. **ID Selectors**: If an element has an ID, use `#id`
+2. **Data Attributes**: Use `data-*` attributes if available
+3. **Class Selectors**: Use unique class combinations with parent context
+4. **nth-of-type Selectors**: Use nth-of-type for better specificity with similar elements
+5. **Path Selectors**: Generate full DOM path with nth-child/nth-of-type selectors
+
+### Improved Algorithm:
+- **Parent Context**: When multiple elements have the same classes, the selector includes parent context
+- **nth-of-type**: Uses nth-of-type instead of nth-child for better specificity
+- **Validation**: Automatically validates selectors to ensure they work correctly
+- **Fallback**: Falls back to path-based selectors when simpler methods aren't unique enough
+
+## Technical Details
+
+- **Manifest Version**: 3 (latest Chrome extension standard)
+- **Permissions**: `scripting`, `activeTab`, `storage`
+- **Content Script**: Runs on all URLs (`<all_urls>`)
+- **Background Script**: Service worker for cross-tab communication
+- **Storage**: Uses Chrome's local storage for persistence
+
+## Troubleshooting
+
+### Common Issues:
+
+1. **Elements not highlighting**: Make sure the extension is active and you're hovering over actual page elements
+2. **Click not working**: Try refreshing the page and restarting the extension
+3. **Selectors not unique**: The extension will generate path-based selectors for complex elements
+4. **Test button not working**: Make sure you're on the same page where the element was captured
+
+### Debug Mode:
+- Open Chrome DevTools
+- Check the Console tab for any error messages
+- Verify the extension is loaded in `chrome://extensions/`
 
 ## Development
 
-### Making Changes
+To modify the extension:
 
-1. Edit the source files in the `extension` folder
+1. Edit the relevant files in the `extension/` folder
 2. Go to `chrome://extensions/`
 3. Click the refresh icon on the extension card
 4. Test your changes
 
-### Debugging
+## Browser Compatibility
 
-- **Popup**: Right-click the extension icon and select "Inspect popup"
-- **Content Script**: Use browser dev tools on the target page
-- **Background Script**: Go to `chrome://extensions/`, find your extension, and click "service worker"
-
-### Building for Production
-
-1. Zip the extension folder
-2. Use Chrome's "Pack extension" feature or a build tool
-3. The resulting `.crx` file can be distributed
-
-## API Reference
-
-### Background Script Messages
-
-- `{ action: 'startSelection' }` - Start element selection mode
-- `{ action: 'stopSelection' }` - Stop element selection mode
-- `{ action: 'getStatus' }` - Get current selection status
-
-### Content Script Messages
-
-- `{ action: 'elementCaptured', element: {...} }` - Send captured element data
-
-### Element Data Structure
-
-```javascript
-{
-  selector: "string",      // CSS selector
-  tagName: "string",       // HTML tag name
-  id: "string",           // Element ID (if any)
-  classes: "string",      // Class names
-  text: "string",         // Element text content (truncated)
-  timestamp: number       // Capture timestamp
-}
-```
-
-## Troubleshooting
-
-### Common Issues
-
-1. **Extension not working**: Check if it's enabled in `chrome://extensions/`
-2. **Elements not highlighting**: Ensure the page allows content scripts
-3. **Selectors not unique**: The extension will use path-based selectors as fallback
-4. **Storage not working**: Check if storage permission is granted
-
-### Permissions
-
-- `scripting`: Inject scripts into web pages
-- `activeTab`: Access the current tab
-- `storage`: Save captured elements locally
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
+- Chrome 88+ (Manifest V3)
+- Edge 88+ (Chromium-based)
+- Other Chromium-based browsers
 
 ## License
 

@@ -1,7 +1,7 @@
 // Background script for Onboarding Builder extension
 let currentTab = null;
 
-// Listen for messages from popup
+// Listen for messages from popup and content script
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'startSelection') {
     startElementSelection();
@@ -11,7 +11,20 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     sendResponse({ success: true });
   } else if (request.action === 'getStatus') {
     sendResponse({ active: currentTab !== null });
+  } else if (request.action === 'elementCaptured') {
+    // Forward element capture to popup if it's open
+    chrome.runtime.sendMessage(request).catch(() => {
+      // Popup might not be open, that's okay
+    });
+    sendResponse({ success: true });
+  } else if (request.action === 'widgetMissing') {
+    // Forward widget missing message to popup
+    chrome.runtime.sendMessage(request).catch(() => {
+      // Popup might not be open, that's okay
+    });
+    sendResponse({ success: true });
   }
+  return true; // Keep message channel open for async responses
 });
 
 // Start element selection mode
@@ -26,6 +39,7 @@ async function startElementSelection() {
     });
   } catch (error) {
     console.error('Error starting selection:', error);
+    currentTab = null;
   }
 }
 
@@ -37,9 +51,10 @@ async function stopElementSelection() {
         target: { tabId: currentTab },
         function: disableOverlay
       });
-      currentTab = null;
     } catch (error) {
       console.error('Error stopping selection:', error);
+    } finally {
+      currentTab = null;
     }
   }
 }
