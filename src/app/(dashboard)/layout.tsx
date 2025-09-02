@@ -16,29 +16,37 @@ export default function DashboardLayout({
   const { user, loading } = useAuth();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
-  // Determine active item based on current path
   const getActiveItem = () => {
-    if (pathname.includes('/tooltip')) return 'tooltip';
-    if (pathname.includes('/toast')) return 'toast';
-    if (pathname.includes('/themes')) return 'themes';
-    if (pathname.includes('/settings')) return 'settings';
-    if (pathname.includes('/onboarding')) return 'onboarding';
-    return 'modal';
+    switch (pathname) {
+      case '/tooltip': return 'tooltip';
+      case '/toast': return 'toast';
+      case '/themes': return 'themes';
+      case '/settings': return 'settings';
+      case '/onboarding': return 'onboarding';
+      case '/highlights': return 'highlights';
+      case '/tags': return 'tags';
+      default: return 'modal';
+    }
   };
 
-  const handleNavigation = (item: 'modal' | 'tooltip' | 'toast' | 'themes' | 'settings' | 'onboarding') => {
-    if (item === 'tooltip') {
-      router.push('/tooltip');
-    } else if (item === 'toast') {
-      router.push('/toast');
-    } else if (item === 'themes') {
-      router.push('/themes');
-    } else if (item === 'settings') {
-      router.push('/settings');
-    } else if (item === 'onboarding') {
-      router.push('/onboarding');
-    } else {
-      router.push('/modal');
+  const handleNavigation = (item: 'modal' | 'tooltip' | 'toast' | 'themes' | 'settings' | 'onboarding' | 'highlights' | 'tags') => {
+    switch (item) {
+      case 'tooltip':
+        router.push('/tooltip');
+      case 'toast':
+        router.push('/toast');
+      case 'themes':
+        router.push('/themes');
+      case 'settings':
+        router.push('/settings');
+      case 'onboarding':
+        router.push('/onboarding');
+      case 'highlights':
+        router.push('/highlights');
+      case 'tags':
+        router.push('/tags');
+      default:
+        router.push('/modal');
     }
   };
 

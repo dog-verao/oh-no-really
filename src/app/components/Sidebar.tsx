@@ -12,6 +12,10 @@ import {
   Avatar,
   IconButton,
 } from "@mui/material";
+import {
+  Star,
+  LocalOffer,
+} from "@mui/icons-material";
 
 import { useAuth } from '@/contexts/AuthContext';
 import Image from 'next/image';
@@ -20,8 +24,8 @@ import Image from 'next/image';
 interface SidebarProps {
   open: boolean;
   onClose?: () => void;
-  activeItem?: 'modal' | 'tooltip' | 'toast' | 'themes' | 'settings' | 'onboarding';
-  onItemClick?: (item: 'modal' | 'tooltip' | 'toast' | 'themes' | 'settings' | 'onboarding') => void;
+  activeItem?: 'modal' | 'tooltip' | 'toast' | 'themes' | 'settings' | 'onboarding' | 'highlights' | 'tags';
+  onItemClick?: (item: 'modal' | 'tooltip' | 'toast' | 'themes' | 'settings' | 'onboarding' | 'highlights' | 'tags') => void;
   collapsed?: boolean;
   onToggleCollapse?: () => void;
 }
@@ -64,13 +68,23 @@ export const Sidebar = ({
       icon: <Image src="/illustrations/Notion-Icons/Regular/svg/ni-code-slash.svg" alt="onboarding" width={20} height={20} />,
     },
     {
+      id: 'highlights' as const,
+      label: 'Highlights',
+      icon: <Star sx={{ width: 20, height: 20 }} />,
+    },
+    {
+      id: 'tags' as const,
+      label: 'Tags',
+      icon: <LocalOffer sx={{ width: 20, height: 20 }} />,
+    },
+    {
       id: 'settings' as const,
       label: 'Configuration',
       icon: <Image src="/illustrations/Notion-Icons/Regular/svg/gear.svg" alt="Configuration" width={20} height={20} />,
     },
   ];
 
-  const handleItemClick = (itemId: 'modal' | 'tooltip' | 'toast' | 'themes' | 'settings' | 'onboarding') => {
+  const handleItemClick = (itemId: 'modal' | 'tooltip' | 'toast' | 'themes' | 'settings' | 'onboarding' | 'highlights' | 'tags') => {
     onItemClick?.(itemId);
   };
 

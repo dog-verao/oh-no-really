@@ -8,22 +8,17 @@ import {
   Card,
   CardContent,
   Typography,
-  Chip,
   IconButton,
   List,
   ListItem,
-  ListItemText,
-  ListItemSecondaryAction,
   Divider,
   CircularProgress,
   Alert,
   Snackbar,
-  InputAdornment,
   AlertTitle,
 } from '@mui/material';
 import {
   PlayArrow,
-  Stop,
   Visibility,
   Delete,
   Edit,
@@ -43,7 +38,21 @@ interface CapturedElement {
   timestamp: number;
 }
 
-export default function OnboardingPage() {
+interface ElementInspectorProps {
+  title: string;
+  description: string;
+  onSave: (elements: CapturedElement[]) => Promise<void>;
+  onBack?: () => void;
+  showBackButton?: boolean;
+}
+
+export default function ElementInspector({ 
+  title, 
+  description, 
+  onSave, 
+  onBack,
+  showBackButton = true 
+}: ElementInspectorProps) {
   const router = useRouter();
   const [url, setUrl] = useState('');
   const [currentUrl, setCurrentUrl] = useState('');
@@ -186,22 +195,19 @@ export default function OnboardingPage() {
     }
 
     try {
-      const response = await fetch('/api/selectors', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ selectors: capturedElements }),
-      });
-
-      if (response.ok) {
-        showSnackbar('Selectors saved successfully!');
-      } else {
-        throw new Error('Failed to save');
-      }
+      await onSave(capturedElements);
+      showSnackbar('Elements saved successfully!');
     } catch (error) {
-      showSnackbar('Failed to save selectors', 'error');
+      showSnackbar('Failed to save elements', 'error');
       console.error('Save error:', error);
+    }
+  };
+
+  const handleBack = () => {
+    if (onBack) {
+      onBack();
+    } else {
+      router.back();
     }
   };
 
@@ -213,12 +219,14 @@ export default function OnboardingPage() {
         <Box sx={{ bgcolor: 'white', borderBottom: 1, borderColor: 'grey.200', p: 2, height: 72, display: 'flex', alignItems: 'center' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '100%' }}>
             {/* Back Button */}
-            <IconButton
-              onClick={() => router.back()}
-              size="small"
-            >
-              <img src="/illustrations/Notion-Icons/Regular/svg/ni-arrow-left.svg" alt="Back" style={{ width: 20, height: 20 }} />
-            </IconButton>
+            {showBackButton && (
+              <IconButton
+                onClick={handleBack}
+                size="small"
+              >
+                <img src="/illustrations/Notion-Icons/Regular/svg/ni-arrow-left.svg" alt="Back" style={{ width: 20, height: 20 }} />
+              </IconButton>
+            )}
 
             {/* URL Input */}
             <TextField
@@ -269,10 +277,10 @@ export default function OnboardingPage() {
               <Box sx={{ textAlign: 'center' }}>
                 <Visibility sx={{ fontSize: 64, color: 'grey.300', mb: 2 }} />
                 <Typography variant="h6" sx={{ mb: 1 }}>
-                  Enter a URL to start inspecting
+                  {title}
                 </Typography>
                 <Typography color="text.secondary">
-                  Load any website with the widget installed to begin selecting elements
+                  {description}
                 </Typography>
               </Box>
             </Box>
@@ -308,7 +316,7 @@ export default function OnboardingPage() {
                 startIcon={<Save />}
                 sx={{ bgcolor: 'black', '&:hover': { bgcolor: 'grey.800' } }}
               >
-                Save Selectors
+                Save Elements
               </Button>
             </Box>
             <Divider />
