@@ -1,6 +1,7 @@
 'use client';
 
-import ElementInspector from '../../components/ElementInspector';
+import { ElementInspectorProvider } from '@/providers/ElementInspectorProvider';
+import ElementInspector from '../../components/Inspector/ElementInspector';
 
 interface CapturedElement {
   id: string;
@@ -27,11 +28,13 @@ export default function TagsPage() {
   };
 
   return (
-    <ElementInspector
-      title="Select elements to tag"
-      description="Choose elements on your page that should be tagged for categorization"
-      onSave={saveToBackend}
-      showBackButton={false}
-    />
+    <ElementInspectorProvider>
+      <ElementInspector
+        title="Select elements to tag"
+        description="Choose elements on your page that should be tagged for categorization"
+        onSave={saveToBackend}
+        showBackButton={false}
+      />
+    </ElementInspectorProvider>
   );
 }

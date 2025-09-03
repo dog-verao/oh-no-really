@@ -1,6 +1,7 @@
 'use client';
 
-import ElementInspector from '../../components/ElementInspector';
+import { ElementInspectorProvider } from '@/providers/ElementInspectorProvider';
+import ElementInspector from '../../components/Inspector/ElementInspector';
 
 interface CapturedElement {
   id: string;
@@ -27,11 +28,13 @@ export default function OnboardingPage() {
   };
 
   return (
-    <ElementInspector
-      title="Enter a URL to start inspecting"
-      description="Load any website to begin selecting elements for configuration"
-      onSave={saveToBackend}
-      showBackButton={false}
-    />
+    <ElementInspectorProvider>
+      <ElementInspector
+        title="Enter a URL to start inspecting"
+        description="Load any website to begin selecting elements for configuration"
+        onSave={saveToBackend}
+        showBackButton={false}
+      />
+    </ElementInspectorProvider>
   );
 }

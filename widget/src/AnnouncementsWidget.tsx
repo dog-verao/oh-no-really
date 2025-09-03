@@ -308,10 +308,31 @@ function onClick(e: MouseEvent): void {
     <span>✅ Element captured!</span>
   `;
 
+  // Debug: Log the rect data
+  console.log('Element rect:', rect);
+  console.log('Element position and size:', {
+    x: Math.round(rect.left),
+    y: Math.round(rect.top),
+    width: Math.round(rect.width),
+    height: Math.round(rect.height)
+  });
+
   // Send element data immediately
+  const elementData = {
+    selector,
+    tagName,
+    text,
+    x: Math.round(rect.left),
+    y: Math.round(rect.top),
+    width: Math.round(rect.width),
+    height: Math.round(rect.height)
+  };
+
+  console.log('Sending element data:', elementData);
+
   window.parent.postMessage({
     type: 'ELEMENT_SELECTED',
-    data: { selector, tagName, text }
+    data: elementData
   }, '*');
 
   // Hide tooltip after 2 seconds
@@ -355,11 +376,16 @@ function stopInspectMode(): void {
 window.addEventListener('message', (event) => {
   console.log('Widget received message:', event.data);
   if (event.data.type === 'START_INSPECT') {
+    console.log('Starting inspect mode in widget');
     startInspectMode();
   } else if (event.data.type === 'STOP_INSPECT') {
+    console.log('Stopping inspect mode in widget');
     stopInspectMode();
   }
 });
+
+// Log that the widget is loaded
+console.log('AnnouncementsWidget loaded and ready for inspection');
 
 function AnnouncementsWidget({ accountId, baseUrl = '' }: AnnouncementsWidgetProps) {
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);

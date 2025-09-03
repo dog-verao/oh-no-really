@@ -1,6 +1,7 @@
 'use client';
 
-import ElementInspector from '../../components/ElementInspector';
+import { ElementInspectorProvider } from '@/providers/ElementInspectorProvider';
+import ElementInspector from '../../components/Inspector/ElementInspector';
 
 interface CapturedElement {
   id: string;
@@ -27,11 +28,13 @@ export default function HighlightsPage() {
   };
 
   return (
-    <ElementInspector
-      title="Select elements to highlight"
-      description="Choose elements on your page that should be highlighted to draw attention"
-      onSave={saveToBackend}
-      showBackButton={false}
-    />
+    <ElementInspectorProvider>
+      <ElementInspector
+        title="Select elements to highlight"
+        description="Choose elements on your page that should be highlighted to draw attention"
+        onSave={saveToBackend}
+        showBackButton={false}
+      />
+    </ElementInspectorProvider>
   );
 }
