@@ -29,7 +29,7 @@ export default function OnboardingPage() {
   return (
     <ElementInspector
       title="Enter a URL to start inspecting"
-      description="Load any website with the widget installed to begin selecting elements"
+      description="Load any website to begin selecting elements for configuration"
       onSave={saveToBackend}
       showBackButton={false}
     />

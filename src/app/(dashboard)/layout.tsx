@@ -33,20 +33,28 @@ export default function DashboardLayout({
     switch (item) {
       case 'tooltip':
         router.push('/tooltip');
+        break;
       case 'toast':
         router.push('/toast');
+        break;
       case 'themes':
         router.push('/themes');
+        break;
       case 'settings':
         router.push('/settings');
+        break;
       case 'onboarding':
         router.push('/onboarding');
+        break;
       case 'highlights':
         router.push('/highlights');
+        break;
       case 'tags':
         router.push('/tags');
+        break;
       default:
         router.push('/modal');
+        break;
     }
   };
 
