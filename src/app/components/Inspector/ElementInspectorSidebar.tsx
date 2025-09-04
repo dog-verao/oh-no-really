@@ -12,7 +12,7 @@ import {
 import { ElementCard } from './ElementCard';
 import { RefObject } from 'react';
 
-import { Position } from '../PositionSelector';
+import { Position } from './PositionSelector';
 import { HighlightType } from '../HighlightTypeSelector';
 
 export interface CapturedElement {

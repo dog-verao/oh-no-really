@@ -1,7 +1,7 @@
 'use client';
 
 import { Box, Typography, Alert } from '@mui/material';
-import { ThemeForm } from '../../../../components/ThemeForm';
+import { ThemeForm } from '../../../../components/Themes/ThemeForm';
 import { useThemeQueries } from '@/hooks/useThemeQueries';
 import { useCurrentAccount } from '@/hooks/useCurrentAccount';
 import { useRouter, useParams } from 'next/navigation';

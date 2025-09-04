@@ -45,7 +45,7 @@ export default function ThemesPage() {
   };
 
   const handleViewTheme = (themeId: string) => {
-    router.push(`/themes/${themeId}`);
+    router.push(`/themes/${themeId}/edit`);
   };
 
   const handleEditTheme = (themeId: string) => {
@@ -207,6 +207,7 @@ export default function ThemesPage() {
             <DataGrid
               rows={themes}
               columns={columns}
+              onRowClick={(params) => handleViewTheme(params.row.id)}
               getRowId={(row) => row.id}
               pageSizeOptions={[10, 25, 50]}
               initialState={{
@@ -258,23 +259,6 @@ export default function ThemesPage() {
           horizontal: 'right',
         }}
       >
-        <MenuItem
-          onClick={() => {
-            if (selectedThemeId) {
-              handleViewTheme(selectedThemeId);
-            }
-            handleMenuClose();
-          }}
-        >
-          <Image
-            src="/illustrations/Notion-Icons/Regular/svg/ni-full-page.svg"
-            alt="View"
-            width={16}
-            height={16}
-            style={{ marginRight: 8 }}
-          />
-          View
-        </MenuItem>
         <MenuItem
           onClick={() => {
             if (selectedThemeId) {

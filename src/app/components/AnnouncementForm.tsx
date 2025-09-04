@@ -13,7 +13,7 @@ import {
   Alert,
   Snackbar,
 } from '@mui/material';
-import { ThemeSelector } from './ThemeSelector';
+import { ThemeSelector } from './Themes/ThemeSelector';
 import { TiptapEditor } from './TiptapEditor';
 import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
