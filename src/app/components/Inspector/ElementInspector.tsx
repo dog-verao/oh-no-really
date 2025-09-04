@@ -19,6 +19,7 @@ interface ElementInspectorProps {
   onSave: (elements: CapturedElement[]) => Promise<void>;
   onBack?: () => void;
   showBackButton?: boolean;
+  isHighlightPage?: boolean;
 }
 
 export default function ElementInspector({
@@ -26,7 +27,8 @@ export default function ElementInspector({
   description,
   onSave,
   onBack,
-  showBackButton = true
+  showBackButton = true,
+  isHighlightPage = false
 }: ElementInspectorProps) {
   const router = useRouter();
   const [currentUrl, setCurrentUrl] = useState('');
@@ -222,6 +224,7 @@ export default function ElementInspector({
         onUpdateElement={updateElement}
         hasUrl={!!currentUrl}
         iframeRef={iframeRef}
+        isHighlightPage={isHighlightPage}
       />
 
       {/* Snackbar for notifications */}

@@ -6,6 +6,7 @@ import ModalAnnouncement from './components/ModalAnnouncement';
 import ToastAnnouncement from './components/ToastAnnouncement';
 import TooltipAnnouncement from './components/TooltipAnnouncement';
 import Tag from './components/Tag';
+import Highlight from './components/Highlight';
 
 interface Announcement {
   id: string;
@@ -95,10 +96,10 @@ function isStableIdentifier(identifier: string): boolean {
 
 // Listen for messages from the inspector
 function handleInspectorMessage(event: MessageEvent) {
-  const { type, selector, content, config } = event.data || {};
+  const { type, widgetType, selector, content, config } = event.data || {};
 
   if (type === 'RENDER_WIDGET') {
-    // Remove any existing tag
+    // Remove any existing widget
     if (currentTag) {
       document.body.removeChild(currentTag);
       currentTag = null;
@@ -111,31 +112,46 @@ function handleInspectorMessage(event: MessageEvent) {
       return;
     }
 
-    // Create a container for the tag
-    const tagContainer = document.createElement('div');
-    tagContainer.style.position = 'absolute';
-    tagContainer.style.top = '0';
-    tagContainer.style.left = '0';
-    tagContainer.style.width = '100%';
-    tagContainer.style.height = '100%';
-    tagContainer.style.pointerEvents = 'none';
-    tagContainer.style.zIndex = '999999';
+    // Create a container for the widget
+    const widgetContainer = document.createElement('div');
+    widgetContainer.style.position = 'absolute';
+    widgetContainer.style.top = '0';
+    widgetContainer.style.left = '0';
+    widgetContainer.style.width = '100%';
+    widgetContainer.style.height = '100%';
+    widgetContainer.style.pointerEvents = 'none';
+    widgetContainer.style.zIndex = '999999';
 
-    // Render the tag using React
-    const root = createRoot(tagContainer);
-    root.render(
-      <Tag
-        text={content}
-        position={config.placement || 'top-right'}
-        targetElement={targetElement as HTMLElement}
-        offsetX={config.offsetX || 0}
-        offsetY={config.offsetY || 0}
-        theme={config.theme}
-      />
-    );
+    // Render the appropriate widget using React
+    const root = createRoot(widgetContainer);
 
-    document.body.appendChild(tagContainer);
-    currentTag = tagContainer;
+    if (widgetType === 'highlight') {
+      root.render(
+        <Highlight
+          type={config.type || 'pulse'}
+          position={config.placement || 'top-right'}
+          targetElement={targetElement as HTMLElement}
+          offsetX={config.offsetX || 0}
+          offsetY={config.offsetY || 0}
+          theme={config.theme}
+        />
+      );
+    } else {
+      // Default to tag
+      root.render(
+        <Tag
+          text={content}
+          position={config.placement || 'top-right'}
+          targetElement={targetElement as HTMLElement}
+          offsetX={config.offsetX || 0}
+          offsetY={config.offsetY || 0}
+          theme={config.theme}
+        />
+      );
+    }
+
+    document.body.appendChild(widgetContainer);
+    currentTag = widgetContainer;
   }
 }
 
@@ -434,6 +450,13 @@ window.addEventListener('message', (event) => {
   } else if (event.data.type === 'RENDER_WIDGET') {
     console.log('Rendering widget:', event.data);
     handleInspectorMessage(event);
+  } else if (event.data.type === 'REMOVE_WIDGET') {
+    console.log('Removing widget');
+    // Remove any existing widget
+    if (currentTag) {
+      document.body.removeChild(currentTag);
+      currentTag = null;
+    }
   }
 });
 

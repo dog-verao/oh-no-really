@@ -2,9 +2,11 @@ import { Box, Button, Card, CardContent, Divider, IconButton, ListItem, TextFiel
 import PositionSelector, { Position } from "../PositionSelector"
 import TagTextInput from "../TagTextInput"
 import PositionFineTune from "../PositionFineTune"
+import HighlightTypeSelector, { HighlightType } from "../HighlightTypeSelector"
+import HighlightThemeSettings from "../HighlightThemeSettings"
 import { Check, Close, Delete, Edit } from "@mui/icons-material"
 import { CapturedElement } from "./ElementInspectorSidebar";
-import { useState, RefObject } from "react";
+import { useState, RefObject, useEffect } from "react";
 
 interface ElementCardProps {
   element: CapturedElement;
@@ -13,6 +15,19 @@ interface ElementCardProps {
   index: number;
   totalElements: number;
   iframeRef: RefObject<HTMLIFrameElement | null>;
+  isHighlightPage?: boolean;
+}
+
+interface EditState {
+  label: string;
+  position: Position;
+  tagText: string;
+  offsetX: number;
+  offsetY: number;
+  highlightType: HighlightType;
+  highlightColor: string;
+  highlightSize: number;
+  highlightDuration: number;
 }
 
 export const ElementCard = ({
@@ -21,38 +36,76 @@ export const ElementCard = ({
   onDeleteElement,
   index,
   totalElements,
-  iframeRef
+  iframeRef,
+  isHighlightPage = false
 }: ElementCardProps) => {
-  const [isEditing, setIsEditing] = useState(false);
-  const [editLabel, setEditLabel] = useState(element.label);
-  const [editPosition, setEditPosition] = useState<Position>(
-    element.position && ['top-left', 'top', 'top-right', 'left', 'center', 'right', 'bottom-left', 'bottom', 'bottom-right'].includes(element.position)
+  const initialState: EditState = {
+    label: element.label,
+    position: element.position && ['top-left', 'top', 'top-right', 'left', 'center', 'right', 'bottom-left', 'bottom', 'bottom-right'].includes(element.position)
       ? element.position as Position
-      : 'top-right'
-  );
-  const [editTagText, setEditTagText] = useState(element.tagText || '');
-  const [editOffsetX, setEditOffsetX] = useState(element.offsetX || 0);
-  const [editOffsetY, setEditOffsetY] = useState(element.offsetY || 0);
+      : 'top-right',
+    tagText: element.tagText || '',
+    offsetX: element.offsetX || 0,
+    offsetY: element.offsetY || 0,
+    highlightType: element.highlightType || 'pulse',
+    highlightColor: element.highlightColor || '#1976d2',
+    highlightSize: element.highlightSize || 35,
+    highlightDuration: element.highlightDuration || 2
+  }
 
-  const handleSaveEdit = () => {
-    console.log('Saving edit for element:', element);
-    if (!editLabel.trim()) return;
-    if (!editTagText.trim()) {
-      // You might want to show an error message here
-      return;
-    }
+  const [prevState, setPrevState] = useState<EditState>(initialState);
+  const [editState, setEditState] = useState<EditState>(initialState);
+  const [isEditing, setIsEditing] = useState(false);
 
-    // Send message to widget to render the tag
+  // Sync edit state with element prop changes only when component first mounts or after saving
+  useEffect(() => {
+    setEditState({
+      label: element.label,
+      position: element.position && ['top-left', 'top', 'top-right', 'left', 'center', 'right', 'bottom-left', 'bottom', 'bottom-right'].includes(element.position)
+        ? element.position as Position
+        : 'top-right',
+      tagText: element.tagText || '',
+      offsetX: element.offsetX || 0,
+      offsetY: element.offsetY || 0,
+      highlightType: element.highlightType || 'pulse',
+      highlightColor: element.highlightColor || '#1976d2',
+      highlightSize: element.highlightSize || 35,
+      highlightDuration: element.highlightDuration || 2
+    });
+  }, [element.id]); // Only sync when element ID changes (new element selected)
+
+  // Helper function to send widget render message to iframe
+  const sendWidgetMessage = (state: EditState, isHighlight: boolean) => {
     const iframe = iframeRef.current;
-    if (iframe?.contentWindow) {
+    if (!iframe?.contentWindow) return;
+
+    if (isHighlight) {
       iframe.contentWindow.postMessage({
         type: 'RENDER_WIDGET',
+        widgetType: 'highlight',
         selector: element.selector,
-        content: editTagText.trim(),
         config: {
-          placement: editPosition,
-          offsetX: editOffsetX,
-          offsetY: editOffsetY,
+          placement: state.position,
+          offsetX: state.offsetX,
+          offsetY: state.offsetY,
+          type: state.highlightType,
+          theme: {
+            backgroundColor: state.highlightColor,
+            size: state.highlightSize,
+            animationDuration: state.highlightDuration
+          }
+        }
+      }, '*');
+    } else {
+      iframe.contentWindow.postMessage({
+        type: 'RENDER_WIDGET',
+        widgetType: 'tag',
+        selector: element.selector,
+        content: state.tagText,
+        config: {
+          placement: state.position,
+          offsetX: state.offsetX,
+          offsetY: state.offsetY,
           theme: {
             backgroundColor: '#1976d2',
             textColor: '#ffffff',
@@ -61,108 +114,117 @@ export const ElementCard = ({
         }
       }, '*');
     }
+  };
 
-    onSaveEdit(element.id, {
-      label: editLabel.trim(),
-      position: editPosition,
-      tagText: editTagText.trim(),
-      offsetX: editOffsetX,
-      offsetY: editOffsetY
-    });
+  const handleSaveEdit = () => {
+    if (!editState.label.trim()) return;
+
+    if (isHighlightPage) {
+      sendWidgetMessage(editState, true);
+
+      onSaveEdit(element.id, {
+        label: editState.label.trim(),
+        position: editState.position,
+        highlightType: editState.highlightType,
+        highlightColor: editState.highlightColor,
+        highlightSize: editState.highlightSize,
+        highlightDuration: editState.highlightDuration,
+        offsetX: editState.offsetX,
+        offsetY: editState.offsetY
+      });
+    } else {
+      if (!editState.tagText.trim()) return;
+
+      sendWidgetMessage(editState, false);
+
+      onSaveEdit(element.id, {
+        label: editState.label.trim(),
+        position: editState.position,
+        tagText: editState.tagText.trim(),
+        offsetX: editState.offsetX,
+        offsetY: editState.offsetY
+      });
+    }
+
     setIsEditing(false);
   };
 
   const handleCancelEdit = () => {
-    setEditLabel(element.label);
-    setEditPosition(
-      element.position && ['top-left', 'top', 'top-right', 'left', 'center', 'right', 'bottom-left', 'bottom', 'bottom-right'].includes(element.position)
-        ? element.position as Position
-        : 'top-right'
-    );
-    setEditTagText(element.tagText || '');
-    setEditOffsetX(element.offsetX || 0);
-    setEditOffsetY(element.offsetY || 0);
+    // Revert to the current element state (last saved values)
+    setEditState(prevState);
     setIsEditing(false);
+
+    // Send the reverted state to the iframe
+    sendWidgetMessage(prevState, isHighlightPage);
   };
 
   const handleStartEdit = () => {
+    setPrevState(editState);
     setIsEditing(true);
   };
 
   const handlePositionChange = (newPosition: Position) => {
-    setEditPosition(newPosition);
+    const newState = { ...editState, position: newPosition };
+    setEditState(newState);
     // Send live update for position change
-    const iframe = iframeRef.current;
-    if (iframe?.contentWindow) {
-      iframe.contentWindow.postMessage({
-        type: 'RENDER_WIDGET',
-        selector: element.selector,
-        content: editTagText.trim(),
-        config: {
-          placement: newPosition,
-          offsetX: editOffsetX,
-          offsetY: editOffsetY,
-          theme: {
-            backgroundColor: '#1976d2',
-            textColor: '#ffffff',
-            borderRadius: '16px'
-          }
-        }
-      }, '*');
-    }
+    sendWidgetMessage(newState, isHighlightPage);
   };
 
   const handleTagTextChange = (newText: string) => {
-    setEditTagText(newText);
+    const newState = { ...editState, tagText: newText };
+    setEditState(newState);
     // Send live update for text change
-    const iframe = iframeRef.current;
-    if (iframe?.contentWindow) {
-      iframe.contentWindow.postMessage({
-        type: 'RENDER_WIDGET',
-        selector: element.selector,
-        content: newText.trim(),
-        config: {
-          placement: editPosition,
-          offsetX: editOffsetX,
-          offsetY: editOffsetY,
-          theme: {
-            backgroundColor: '#1976d2',
-            textColor: '#ffffff',
-            borderRadius: '16px'
-          }
-        }
-      }, '*');
-    }
+    sendWidgetMessage(newState, isHighlightPage);
   };
 
   const handleOffsetXChange = (newOffsetX: number) => {
-    setEditOffsetX(newOffsetX);
+    setEditState(prev => ({ ...prev, offsetX: newOffsetX }));
   };
 
   const handleOffsetYChange = (newOffsetY: number) => {
-    setEditOffsetY(newOffsetY);
+    setEditState(prev => ({ ...prev, offsetY: newOffsetY }));
+  };
+
+  const handleHighlightTypeChange = (newType: HighlightType) => {
+    const newState = { ...editState, highlightType: newType };
+    setEditState(newState);
+    // Send live update for highlight type change
+    if (isHighlightPage) {
+      sendWidgetMessage(newState, true);
+    }
+  };
+
+  const handleHighlightColorChange = (newColor: string) => {
+    const newState = { ...editState, highlightColor: newColor };
+    setEditState(newState);
+    // Send live update for highlight color change
+    if (isHighlightPage) {
+      sendWidgetMessage(newState, true);
+    }
+  };
+
+  const handleHighlightSizeChange = (newSize: number) => {
+    const newState = { ...editState, highlightSize: newSize };
+    setEditState(newState);
+    // Send live update for highlight size change
+    if (isHighlightPage) {
+      sendWidgetMessage(newState, true);
+    }
+  };
+
+  const handleHighlightDurationChange = (newDuration: number) => {
+    const newState = { ...editState, highlightDuration: newDuration };
+    setEditState(newState);
+    // Send live update for highlight duration change
+    if (isHighlightPage) {
+      sendWidgetMessage(newState, true);
+    }
   };
 
   const handleLivePreview = (newOffsetX: number, newOffsetY: number) => {
     // Send live update to widget without saving
-    const iframe = iframeRef.current;
-    if (iframe?.contentWindow) {
-      iframe.contentWindow.postMessage({
-        type: 'RENDER_WIDGET',
-        selector: element.selector,
-        content: editTagText.trim(),
-        config: {
-          placement: editPosition,
-          offsetX: newOffsetX,
-          offsetY: newOffsetY,
-          theme: {
-            backgroundColor: '#1976d2',
-            textColor: '#ffffff',
-            borderRadius: '16px'
-          }
-        }
-      }, '*');
-    }
+    const newState = { ...editState, offsetX: newOffsetX, offsetY: newOffsetY };
+    sendWidgetMessage(newState, isHighlightPage);
   };
 
   return (
@@ -171,35 +233,55 @@ export const ElementCard = ({
         <Card sx={{ width: '100%' }}>
           <CardContent sx={{ p: 2 }}>
             {isEditing ? (
-              <Box sx={{ space: 1 }}>
+              <Box sx={{ '& > *': { mb: 2 } }}>
                 <TextField
-                  value={editLabel}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditLabel(e.target.value)}
+                  value={editState.label}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setEditState(prev => ({ ...prev, label: e.target.value }))
+                  }
                   onKeyPress={(e: React.KeyboardEvent) => e.key === 'Enter' && handleSaveEdit()}
                   size="small"
                   fullWidth
-                  sx={{ mb: 2 }}
+                  sx={{}}
                   label="Element Label"
                 />
 
                 <PositionSelector
-                  selectedPosition={editPosition}
+                  selectedPosition={editState.position}
                   onPositionChange={handlePositionChange}
                 />
 
                 <PositionFineTune
-                  offsetX={editOffsetX}
-                  offsetY={editOffsetY}
+                  offsetX={editState.offsetX}
+                  offsetY={editState.offsetY}
                   onOffsetXChange={handleOffsetXChange}
                   onOffsetYChange={handleOffsetYChange}
                   onLivePreview={handleLivePreview}
                 />
 
-                <TagTextInput
-                  value={editTagText}
-                  onChange={handleTagTextChange}
-                  error={!editTagText.trim()}
-                />
+                {isHighlightPage ? (
+                  <>
+                    <HighlightTypeSelector
+                      selectedType={editState.highlightType}
+                      onTypeChange={handleHighlightTypeChange}
+                    />
+
+                    <HighlightThemeSettings
+                      backgroundColor={editState.highlightColor}
+                      size={editState.highlightSize}
+                      animationDuration={editState.highlightDuration}
+                      onBackgroundColorChange={handleHighlightColorChange}
+                      onSizeChange={handleHighlightSizeChange}
+                      onAnimationDurationChange={handleHighlightDurationChange}
+                    />
+                  </>
+                ) : (
+                  <TagTextInput
+                    value={editState.tagText}
+                    onChange={handleTagTextChange}
+                    error={!editState.tagText.trim()}
+                  />
+                )}
 
                 <Box sx={{ display: 'flex', gap: 1 }}>
                   <Button size="small" onClick={handleSaveEdit} sx={{ flex: 1 }}>
@@ -273,7 +355,16 @@ export const ElementCard = ({
                     </IconButton>
                     <IconButton
                       size="small"
-                      onClick={() => onDeleteElement(element.id)}
+                      onClick={() => {
+                        // Remove widget from iframe before deleting element
+                        const iframe = iframeRef.current;
+                        if (iframe?.contentWindow) {
+                          iframe.contentWindow.postMessage({
+                            type: 'REMOVE_WIDGET'
+                          }, '*');
+                        }
+                        onDeleteElement(element.id);
+                      }}
                       sx={{ p: 0.5, color: 'error.main' }}
                     >
                       <Delete sx={{ fontSize: 16 }} />

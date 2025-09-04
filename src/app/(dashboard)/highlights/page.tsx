@@ -34,6 +34,7 @@ export default function HighlightsPage() {
         description="Choose elements on your page that should be highlighted to draw attention"
         onSave={saveToBackend}
         showBackButton={false}
+        isHighlightPage={true}
       />
     </ElementInspectorProvider>
   );

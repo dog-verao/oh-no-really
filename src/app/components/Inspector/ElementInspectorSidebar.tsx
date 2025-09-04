@@ -13,6 +13,7 @@ import { ElementCard } from './ElementCard';
 import { RefObject } from 'react';
 
 import { Position } from '../PositionSelector';
+import { HighlightType } from '../HighlightTypeSelector';
 
 export interface CapturedElement {
   id: string;
@@ -23,6 +24,10 @@ export interface CapturedElement {
   timestamp: number;
   position?: Position;
   tagText?: string;
+  highlightType?: HighlightType;
+  highlightColor?: string;
+  highlightSize?: number;
+  highlightDuration?: number;
   offsetX?: number;
   offsetY?: number;
   x?: number;
@@ -40,6 +45,7 @@ interface ElementInspectorSidebarProps {
   onUpdateElement: (id: string, updates: Partial<CapturedElement>) => void;
   hasUrl: boolean;
   iframeRef: RefObject<HTMLIFrameElement | null>;
+  isHighlightPage?: boolean;
 }
 
 export default function ElementInspectorSidebar({
@@ -50,7 +56,8 @@ export default function ElementInspectorSidebar({
   onSaveElements,
   onUpdateElement,
   hasUrl,
-  iframeRef
+  iframeRef,
+  isHighlightPage = false
 }: ElementInspectorSidebarProps) {
   const saveEdit = (id: string, updates: Partial<CapturedElement>) => {
     onUpdateElement(id, updates);
@@ -111,6 +118,7 @@ export default function ElementInspectorSidebar({
                 index={index}
                 totalElements={capturedElements.length}
                 iframeRef={iframeRef}
+                isHighlightPage={isHighlightPage}
               />
             ))}
           </List>
