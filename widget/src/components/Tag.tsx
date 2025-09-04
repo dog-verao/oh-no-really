@@ -7,6 +7,8 @@ interface TagProps {
   text: string;
   position: Position;
   targetElement: HTMLElement;
+  offsetX?: number;
+  offsetY?: number;
   theme?: {
     backgroundColor?: string;
     textColor?: string;
@@ -15,7 +17,7 @@ interface TagProps {
   };
 }
 
-const Tag: React.FC<TagProps> = ({ text, position, targetElement, theme = {} }) => {
+const Tag: React.FC<TagProps> = ({ text, position, targetElement, offsetX = 0, offsetY = 0, theme = {} }) => {
   const getPositionStyles = (): React.CSSProperties => {
     const rect = targetElement.getBoundingClientRect();
     const scrollX = window.pageXOffset || document.documentElement.scrollLeft;
@@ -78,8 +80,8 @@ const Tag: React.FC<TagProps> = ({ text, position, targetElement, theme = {} }) 
 
     return {
       position: 'absolute',
-      left: `${left}px`,
-      top: `${top}px`,
+      left: `${left + offsetX}px`,
+      top: `${top + offsetY}px`,
       zIndex: 999999,
     };
   };

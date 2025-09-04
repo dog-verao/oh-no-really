@@ -23,6 +23,8 @@ export interface CapturedElement {
   timestamp: number;
   position?: Position;
   tagText?: string;
+  offsetX?: number;
+  offsetY?: number;
   x?: number;
   y?: number;
   width?: number;

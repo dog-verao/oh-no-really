@@ -1,6 +1,7 @@
 import { Box, Button, Card, CardContent, Divider, IconButton, ListItem, TextField, Typography } from "@mui/material"
 import PositionSelector, { Position } from "../PositionSelector"
 import TagTextInput from "../TagTextInput"
+import PositionFineTune from "../PositionFineTune"
 import { Check, Close, Delete, Edit } from "@mui/icons-material"
 import { CapturedElement } from "./ElementInspectorSidebar";
 import { useState, RefObject } from "react";
@@ -30,6 +31,8 @@ export const ElementCard = ({
       : 'top-right'
   );
   const [editTagText, setEditTagText] = useState(element.tagText || '');
+  const [editOffsetX, setEditOffsetX] = useState(element.offsetX || 0);
+  const [editOffsetY, setEditOffsetY] = useState(element.offsetY || 0);
 
   const handleSaveEdit = () => {
     console.log('Saving edit for element:', element);
@@ -48,6 +51,8 @@ export const ElementCard = ({
         content: editTagText.trim(),
         config: {
           placement: editPosition,
+          offsetX: editOffsetX,
+          offsetY: editOffsetY,
           theme: {
             backgroundColor: '#1976d2',
             textColor: '#ffffff',
@@ -60,7 +65,9 @@ export const ElementCard = ({
     onSaveEdit(element.id, {
       label: editLabel.trim(),
       position: editPosition,
-      tagText: editTagText.trim()
+      tagText: editTagText.trim(),
+      offsetX: editOffsetX,
+      offsetY: editOffsetY
     });
     setIsEditing(false);
   };
@@ -73,6 +80,8 @@ export const ElementCard = ({
         : 'top-right'
     );
     setEditTagText(element.tagText || '');
+    setEditOffsetX(element.offsetX || 0);
+    setEditOffsetY(element.offsetY || 0);
     setIsEditing(false);
   };
 
@@ -82,10 +91,78 @@ export const ElementCard = ({
 
   const handlePositionChange = (newPosition: Position) => {
     setEditPosition(newPosition);
+    // Send live update for position change
+    const iframe = iframeRef.current;
+    if (iframe?.contentWindow) {
+      iframe.contentWindow.postMessage({
+        type: 'RENDER_WIDGET',
+        selector: element.selector,
+        content: editTagText.trim(),
+        config: {
+          placement: newPosition,
+          offsetX: editOffsetX,
+          offsetY: editOffsetY,
+          theme: {
+            backgroundColor: '#1976d2',
+            textColor: '#ffffff',
+            borderRadius: '16px'
+          }
+        }
+      }, '*');
+    }
   };
 
   const handleTagTextChange = (newText: string) => {
     setEditTagText(newText);
+    // Send live update for text change
+    const iframe = iframeRef.current;
+    if (iframe?.contentWindow) {
+      iframe.contentWindow.postMessage({
+        type: 'RENDER_WIDGET',
+        selector: element.selector,
+        content: newText.trim(),
+        config: {
+          placement: editPosition,
+          offsetX: editOffsetX,
+          offsetY: editOffsetY,
+          theme: {
+            backgroundColor: '#1976d2',
+            textColor: '#ffffff',
+            borderRadius: '16px'
+          }
+        }
+      }, '*');
+    }
+  };
+
+  const handleOffsetXChange = (newOffsetX: number) => {
+    setEditOffsetX(newOffsetX);
+  };
+
+  const handleOffsetYChange = (newOffsetY: number) => {
+    setEditOffsetY(newOffsetY);
+  };
+
+  const handleLivePreview = (newOffsetX: number, newOffsetY: number) => {
+    // Send live update to widget without saving
+    const iframe = iframeRef.current;
+    if (iframe?.contentWindow) {
+      iframe.contentWindow.postMessage({
+        type: 'RENDER_WIDGET',
+        selector: element.selector,
+        content: editTagText.trim(),
+        config: {
+          placement: editPosition,
+          offsetX: newOffsetX,
+          offsetY: newOffsetY,
+          theme: {
+            backgroundColor: '#1976d2',
+            textColor: '#ffffff',
+            borderRadius: '16px'
+          }
+        }
+      }, '*');
+    }
   };
 
   return (
@@ -108,6 +185,14 @@ export const ElementCard = ({
                 <PositionSelector
                   selectedPosition={editPosition}
                   onPositionChange={handlePositionChange}
+                />
+
+                <PositionFineTune
+                  offsetX={editOffsetX}
+                  offsetY={editOffsetY}
+                  onOffsetXChange={handleOffsetXChange}
+                  onOffsetYChange={handleOffsetYChange}
+                  onLivePreview={handleLivePreview}
                 />
 
                 <TagTextInput
@@ -139,6 +224,8 @@ export const ElementCard = ({
                       {element.text.length > 30 ? '...' : ''}
                       {element.position && ` • ${element.position}`}
                       {element.tagText && ` • "${element.tagText}"`}
+                      {(element.offsetX !== undefined || element.offsetY !== undefined) &&
+                        ` • Offset: (${element.offsetX || 0}, ${element.offsetY || 0})px`}
                       {element.x !== undefined && element.y !== undefined && ` • (${element.x}, ${element.y})`}
                       {element.width !== undefined && element.height !== undefined && ` • ${element.width}×${element.height}`}
                     </Typography>

@@ -128,6 +128,8 @@ function handleInspectorMessage(event: MessageEvent) {
         text={content}
         position={config.placement || 'top-right'}
         targetElement={targetElement as HTMLElement}
+        offsetX={config.offsetX || 0}
+        offsetY={config.offsetY || 0}
         theme={config.theme}
       />
     );
