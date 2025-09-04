@@ -1,7 +1,6 @@
 'use client';
 
 import { Box, Typography, Alert } from '@mui/material';
-import { Header } from '../../../../components/Header';
 import { ThemeForm } from '../../../../components/ThemeForm';
 import { useThemeQueries } from '@/hooks/useThemeQueries';
 import { useCurrentAccount } from '@/hooks/useCurrentAccount';
@@ -60,40 +59,24 @@ export default function EditThemePage() {
 
   if (isLoading) {
     return (
-      <Box sx={{ p: 4, pl: 6 }}>
-        <Header
-          title="Edit Theme"
-          subtitle="Update theme configuration."
-        />
-        <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
-          <Typography>Loading theme...</Typography>
-        </Box>
+      <Box sx={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Typography>Loading theme...</Typography>
       </Box>
     );
   }
 
   if (error || !theme) {
     return (
-      <Box sx={{ p: 4, pl: 6 }}>
-        <Header
-          title="Edit Theme"
-          subtitle="Update theme configuration."
-        />
-        <Box sx={{ mt: 4 }}>
-          <Alert severity="error">
-            {error?.message || 'Theme not found'}
-          </Alert>
-        </Box>
+      <Box sx={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Alert severity="error">
+          {error?.message || 'Theme not found'}
+        </Alert>
       </Box>
     );
   }
 
   return (
-    <Box sx={{ p: 4, pl: 6 }}>
-      <Header
-        title={`Edit ${theme.name}`}
-        subtitle="Update your theme settings."
-      />
+    <Box sx={{ height: '100vh', overflow: 'hidden' }}>
       <ThemeForm
         mode="edit"
         initialData={theme}

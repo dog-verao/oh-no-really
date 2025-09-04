@@ -58,11 +58,6 @@ export const Sidebar = ({
       icon: <Image src="/illustrations/Notion-Icons/Regular/svg/ni-bell.svg" alt="Toast" width={20} height={20} />,
     },
     {
-      id: 'themes' as const,
-      label: 'Themes',
-      icon: <Image src="/illustrations/Notion-Icons/Regular/svg/ni-layout-column.svg" alt="Themes" width={20} height={20} />,
-    },
-    {
       id: 'onboarding' as const,
       label: 'Onboarding',
       icon: <Image src="/illustrations/Notion-Icons/Regular/svg/ni-code-slash.svg" alt="onboarding" width={20} height={20} />,
@@ -76,6 +71,11 @@ export const Sidebar = ({
       id: 'tags' as const,
       label: 'Tags',
       icon: <LocalOffer sx={{ width: 20, height: 20 }} />,
+    },
+    {
+      id: 'themes' as const,
+      label: 'Themes',
+      icon: <Image src="/illustrations/Notion-Icons/Regular/svg/ni-layout-column.svg" alt="Themes" width={20} height={20} />,
     },
     {
       id: 'settings' as const,

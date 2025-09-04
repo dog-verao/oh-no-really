@@ -4,6 +4,38 @@ export interface Theme {
   id: string;
   name: string;
   config: {
+    tooltip: {
+      backgroundColor: string;
+      textColor: string;
+      borderRadius: string;
+    };
+    toast: {
+      backgroundColor: string;
+      textColor: string;
+      borderRadius: string;
+      borderColor: string;
+    };
+    highlights: {
+      backgroundColor: string;
+      size: number;
+      animationDuration: number;
+    };
+    tags: {
+      backgroundColor: string;
+      textColor: string;
+      borderRadius: string;
+    };
+    onboarding: {
+      backgroundColor: string;
+      textColor: string;
+      borderRadius: string;
+    };
+    checklist: {
+      backgroundColor: string;
+      textColor: string;
+      borderRadius: string;
+      checkboxColor: string;
+    };
     modal: {
       backgroundColor: string;
       borderRadius: string;

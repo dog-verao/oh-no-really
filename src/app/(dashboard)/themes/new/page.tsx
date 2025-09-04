@@ -1,7 +1,6 @@
 'use client';
 
 import { Box } from '@mui/material';
-import { Header } from '../../../components/Header';
 import { ThemeForm } from '../../../components/ThemeForm';
 import { useThemeQueries } from '@/hooks/useThemeQueries';
 import { useCurrentAccount } from '@/hooks/useCurrentAccount';
@@ -32,11 +31,7 @@ export default function NewThemePage() {
   };
 
   return (
-    <Box sx={{ p: 4, pl: 6 }}>
-      <Header
-        title="Create Theme"
-        subtitle="Set up your custom theme configuration."
-      />
+    <Box sx={{ height: '100vh', overflow: 'hidden' }}>
       <ThemeForm
         mode="create"
         onSubmit={handleSubmit}
