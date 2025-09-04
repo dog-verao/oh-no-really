@@ -3,7 +3,7 @@ import PositionSelector, { Position } from "../PositionSelector"
 import TagTextInput from "../TagTextInput"
 import { Check, Close, Delete, Edit } from "@mui/icons-material"
 import { CapturedElement } from "./ElementInspectorSidebar";
-import { useState } from "react";
+import { useState, RefObject } from "react";
 
 interface ElementCardProps {
   element: CapturedElement;
@@ -11,6 +11,7 @@ interface ElementCardProps {
   onDeleteElement: (id: string) => void;
   index: number;
   totalElements: number;
+  iframeRef: RefObject<HTMLIFrameElement | null>;
 }
 
 export const ElementCard = ({
@@ -18,7 +19,8 @@ export const ElementCard = ({
   onSaveEdit,
   onDeleteElement,
   index,
-  totalElements
+  totalElements,
+  iframeRef
 }: ElementCardProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editLabel, setEditLabel] = useState(element.label);
@@ -35,6 +37,24 @@ export const ElementCard = ({
     if (!editTagText.trim()) {
       // You might want to show an error message here
       return;
+    }
+
+    // Send message to widget to render the tag
+    const iframe = iframeRef.current;
+    if (iframe?.contentWindow) {
+      iframe.contentWindow.postMessage({
+        type: 'RENDER_WIDGET',
+        selector: element.selector,
+        content: editTagText.trim(),
+        config: {
+          placement: editPosition,
+          theme: {
+            backgroundColor: '#1976d2',
+            textColor: '#ffffff',
+            borderRadius: '16px'
+          }
+        }
+      }, '*');
     }
 
     onSaveEdit(element.id, {

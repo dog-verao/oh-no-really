@@ -5,6 +5,7 @@ import CssBaseline from '@mui/material/CssBaseline';
 import ModalAnnouncement from './components/ModalAnnouncement';
 import ToastAnnouncement from './components/ToastAnnouncement';
 import TooltipAnnouncement from './components/TooltipAnnouncement';
+import Tag from './components/Tag';
 
 interface Announcement {
   id: string;
@@ -48,6 +49,9 @@ let highlightBox: HTMLElement | null = null;
 let selectedElement: HTMLElement | null = null;
 let tooltip: HTMLElement | null = null;
 
+// Tag rendering functionality
+let currentTag: HTMLElement | null = null;
+
 // Framework class patterns to blacklist
 const FRAMEWORK_PATTERNS = [
   /^[0-9]+$/,                    // numeric IDs
@@ -87,6 +91,50 @@ const FRAMEWORK_PATTERNS = [
 function isStableIdentifier(identifier: string): boolean {
   if (!identifier || typeof identifier !== 'string') return false;
   return !FRAMEWORK_PATTERNS.some(pattern => pattern.test(identifier));
+}
+
+// Listen for messages from the inspector
+function handleInspectorMessage(event: MessageEvent) {
+  const { type, selector, content, config } = event.data || {};
+
+  if (type === 'RENDER_WIDGET') {
+    // Remove any existing tag
+    if (currentTag) {
+      document.body.removeChild(currentTag);
+      currentTag = null;
+    }
+
+    // Find the target element
+    const targetElement = document.querySelector(selector);
+    if (!targetElement) {
+      console.warn('Target element not found:', selector);
+      return;
+    }
+
+    // Create a container for the tag
+    const tagContainer = document.createElement('div');
+    tagContainer.style.position = 'absolute';
+    tagContainer.style.top = '0';
+    tagContainer.style.left = '0';
+    tagContainer.style.width = '100%';
+    tagContainer.style.height = '100%';
+    tagContainer.style.pointerEvents = 'none';
+    tagContainer.style.zIndex = '999999';
+
+    // Render the tag using React
+    const root = createRoot(tagContainer);
+    root.render(
+      <Tag
+        text={content}
+        position={config.placement || 'top-right'}
+        targetElement={targetElement as HTMLElement}
+        theme={config.theme}
+      />
+    );
+
+    document.body.appendChild(tagContainer);
+    currentTag = tagContainer;
+  }
 }
 
 function generateStableSelector(el: HTMLElement): string {
@@ -381,6 +429,9 @@ window.addEventListener('message', (event) => {
   } else if (event.data.type === 'STOP_INSPECT') {
     console.log('Stopping inspect mode in widget');
     stopInspectMode();
+  } else if (event.data.type === 'RENDER_WIDGET') {
+    console.log('Rendering widget:', event.data);
+    handleInspectorMessage(event);
   }
 });
 

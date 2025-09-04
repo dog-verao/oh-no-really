@@ -221,6 +221,7 @@ export default function ElementInspector({
         onSaveElements={saveToBackend}
         onUpdateElement={updateElement}
         hasUrl={!!currentUrl}
+        iframeRef={iframeRef}
       />
 
       {/* Snackbar for notifications */}

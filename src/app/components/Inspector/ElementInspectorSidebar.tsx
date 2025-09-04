@@ -10,6 +10,7 @@ import {
   Save,
 } from '@mui/icons-material';
 import { ElementCard } from './ElementCard';
+import { RefObject } from 'react';
 
 import { Position } from '../PositionSelector';
 
@@ -36,6 +37,7 @@ interface ElementInspectorSidebarProps {
   onSaveElements: () => void;
   onUpdateElement: (id: string, updates: Partial<CapturedElement>) => void;
   hasUrl: boolean;
+  iframeRef: RefObject<HTMLIFrameElement | null>;
 }
 
 export default function ElementInspectorSidebar({
@@ -45,7 +47,8 @@ export default function ElementInspectorSidebar({
   onDeleteElement,
   onSaveElements,
   onUpdateElement,
-  hasUrl
+  hasUrl,
+  iframeRef
 }: ElementInspectorSidebarProps) {
   const saveEdit = (id: string, updates: Partial<CapturedElement>) => {
     onUpdateElement(id, updates);
@@ -105,6 +108,7 @@ export default function ElementInspectorSidebar({
                 onDeleteElement={onDeleteElement}
                 index={index}
                 totalElements={capturedElements.length}
+                iframeRef={iframeRef}
               />
             ))}
           </List>
